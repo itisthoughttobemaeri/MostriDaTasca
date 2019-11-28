@@ -1,11 +1,15 @@
 package com.example.progetto;
 
+import androidx.annotation.NonNull;
+
 public class User {
     private String username;
     private String id;
     private int LP;
     private int XP;
     private String image;
+
+    // Class used for both profile and rankings
 
     public User (String id) {
         this.id = id;
@@ -31,5 +35,10 @@ public class User {
 
     public String getId() {
         return id;
+    }
+
+    @Override
+    public String toString() {
+        return username + " " + LP + " " + XP;
     }
 }

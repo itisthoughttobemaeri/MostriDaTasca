@@ -1,8 +1,5 @@
 package com.example.progetto;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-
 public class Model {
 
     private static final Model ourInstance = new Model();
@@ -10,91 +7,38 @@ public class Model {
         return ourInstance;
     }
 
-    private String username;
-    private String id;
-    private int LP;
-    private int XP;
-    private String image;
-    private double latitude;
-    private double longitude;
+    private String id;                          // TO DO:
+    private String image;                       // TO DO: save both in Room
 
-    private ArrayList<Monster> monsters;
-    private ArrayList<Candy> candies;
+    private ShownObject[] shownObjects;
     private User[] users;
-
-    public String getUsername() {
-        return username;
-    }
-    public int getLP() {
-        return LP;
-    }
-
-    public int getXP() {
-        return XP;
-    }
 
     public String getImage() {
         return image;
     }
 
     public String getId() {
-        return id;
+        return this.id;
     }
 
-    public double getLatitude() {
-        return latitude;
-    }
-
-    public double getLongitude() {
-        return longitude;
-    }
 
     public void setImage(String image) {
         this.image = image;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
 
-    public void addLP(int points) {
-        this.LP = this.LP + points;
-    }
+    public void setId(String id){ this.id = id; }
 
-    public void addXP(int points) {
-        this.XP = this.XP + points;
-    }
 
-    public void removeLP(int points) {
-        this.LP = this.LP - points;
-    }
-
-    public void removeXP(int points) {
-        this.XP = this.XP - points;
-    }
-
-    public void die(){
-        this.LP = 100;
-        this.XP = 0;
-    }
-
-    public Monster getMonsterById(int id) {
-        for (Monster m : monsters) {
-            if (m.getId() == id) {
-                return m;
+    public ShownObject getShownObjectById(int id) {
+        for (int i = 0; i < shownObjects.length; i++) {
+            if (shownObjects[i].getId() == id) {
+                return shownObjects[i];
             }
         }
         return null;
     }
 
-    public Candy getCandyById(int id) {
-        for (Candy c : candies) {
-            if (c.getId() == id) {
-                return c;
-            }
-        }
-        return null;
-    }
 
     public User getUserById(String id) {
         for (int i=0; i<20; i++) {
@@ -105,18 +49,17 @@ public class Model {
         return null;
     }
 
-    public void refreshCandies(ArrayList<Candy> candies) {
-        this.candies = candies;
+    public void refreshShownObjects(ShownObject[] shownObjects) {
+        this.shownObjects = shownObjects;
     }
 
-    public void refreshMonsters(ArrayList<Monster> monsters) {
-        this.monsters = monsters;
-    }
 
     public void refreshUsers(User[] users){
         this.users = users;
     }
 
+
+    /*
     public boolean isDistanceCandyOk(int id) {
         Candy c = getCandyById(id);
         double x = Math.abs(this.longitude - c.getLon());
@@ -138,4 +81,6 @@ public class Model {
         }
         return false;
     }
+    */
+
 }

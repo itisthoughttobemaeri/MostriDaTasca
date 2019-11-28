@@ -7,10 +7,13 @@ import androidx.appcompat.app.AppCompatActivity;
 
 public class SplashScreen extends AppCompatActivity {
 
+    // TO DO: handle 1st execution & next executions
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.splash_screen);
+
         Thread myThread = new Thread () {
             @Override
             public void run() {
