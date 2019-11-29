@@ -27,5 +27,5 @@
             android:name=".MainActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
     </application>
-    
+
 </manifest>
