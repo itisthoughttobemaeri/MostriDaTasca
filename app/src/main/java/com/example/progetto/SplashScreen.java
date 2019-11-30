@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -32,7 +33,7 @@ public class SplashScreen extends AppCompatActivity {
         setContentView(R.layout.splash_screen);
         requestQueue = Volley.newRequestQueue(this);
 
-        SharedPreferences sharedPreferences = getDefaultSharedPreferences(this);
+        SharedPreferences sharedPreferences = getSharedPreferences("Shared Preferences", 0);
         editor = sharedPreferences.edit();
 
         // The if statement is verifying the 1st execution of the app
@@ -52,8 +53,9 @@ public class SplashScreen extends AppCompatActivity {
                             // Handle JSON data
                             try {
                                 String s = (String) response.get("session_id");
+                                Model.getInstance().setId(response);
                                 Log.d("VolleyJson", s);
-                                doRequests(response);
+                                doRequest(response);
 
                                 editor.putString("session_id", (String) response.get("session_id"));
                                 editor.commit();
@@ -72,15 +74,15 @@ public class SplashScreen extends AppCompatActivity {
             );
             requestQueue.add(JSONRequest_user_setup);
             Log.d("VolleyQueue", "First request added");
-        } else {
+        }
+        else {
             String session_id = sharedPreferences.getString("session_id", null);
             try {
-                doRequests(new JSONObject(
-                        "{session_id:" + session_id + "}"
-                ));
+                Model.getInstance().setId(new JSONObject("{session_id:" + session_id + "}"));
             } catch (JSONException e) {
                 e.printStackTrace();
             }
+            doRequest(Model.getInstance().getId());
         }
 
         Thread myThread = new Thread() {
@@ -99,9 +101,9 @@ public class SplashScreen extends AppCompatActivity {
         myThread.start();
     }
 
-    // Method used to call the request to initialize the objects and the ranking
+    // Method used to call the request to initialize the objects
 
-    private void doRequests(final JSONObject jsonObject) {
+    private void doRequest(final JSONObject jsonObject) {
         // Json object must be session id
         String url = "https://ewserver.di.unimi.it/mobicomp/mostri/getmap.php";
 
@@ -138,43 +140,7 @@ public class SplashScreen extends AppCompatActivity {
 
         requestQueue.add(JSONRequest_data_download);
         Log.d("VolleyQueue", "Second request added");
-
-        url = "https://ewserver.di.unimi.it/mobicomp/mostri/ranking.php";
-
-        JsonObjectRequest JSONRequest_ranking_download = new JsonObjectRequest(
-                Request.Method.POST,
-                url,
-                jsonObject,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        Log.d("VolleyJson", "Server is working");
-                        // Handle JSON data
-                        try {
-                            Gson gson = new Gson();
-                            JSONArray rankings = response.getJSONArray("ranking");
-                            // JSON data converted into array
-                            User[] users = gson.fromJson(rankings.toString(), User[].class);
-                            Log.d("VolleyJson", "THis s the first classified user" + users[0].toString());
-                            Model.getInstance().refreshUsers(users);
-                        }
-                        catch (JSONException e){
-                            e.printStackTrace();
-                        }
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        error.printStackTrace();
-                        // TO DO: handle error 401 & 400
-                    }
-                }
-        );
-        requestQueue.add(JSONRequest_ranking_download);
-        Log.d("VolleyQueue", "Third request added");
     }
 }
-
 
 

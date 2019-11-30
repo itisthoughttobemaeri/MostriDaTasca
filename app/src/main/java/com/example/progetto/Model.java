@@ -1,5 +1,12 @@
 package com.example.progetto;
 
+import android.content.Context;
+
+import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.Volley;
+
+import org.json.JSONObject;
+
 public class Model {
 
     private static final Model ourInstance = new Model();
@@ -7,7 +14,7 @@ public class Model {
         return ourInstance;
     }
 
-    private String id;                          // TO DO:
+    private JSONObject id;
     private String image;                       // TO DO: save both in Room
 
     private ShownObject[] shownObjects;
@@ -17,17 +24,16 @@ public class Model {
         return image;
     }
 
-    public String getId() {
+    public JSONObject getId() {
         return this.id;
     }
-
 
     public void setImage(String image) {
         this.image = image;
     }
 
 
-    public void setId(String id){ this.id = id; }
+    public void setId(JSONObject id){ this.id = id; }
 
 
     public ShownObject getShownObjectById(int id) {
@@ -39,7 +45,7 @@ public class Model {
         return null;
     }
 
-
+    /*
     public User getUserById(String id) {
         for (int i=0; i<20; i++) {
             if (users[i].getId().equals(id)) {
@@ -48,14 +54,18 @@ public class Model {
         }
         return null;
     }
+    */
 
     public void refreshShownObjects(ShownObject[] shownObjects) {
         this.shownObjects = shownObjects;
     }
 
-
     public void refreshUsers(User[] users){
         this.users = users;
+    }
+
+    public User[] getUsers() {
+        return this.users;
     }
 
 

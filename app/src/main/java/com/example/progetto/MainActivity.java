@@ -1,9 +1,13 @@
 package com.example.progetto;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Px;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import android.Manifest;
 import android.content.SharedPreferences;
@@ -13,19 +17,19 @@ import android.location.Location;
 import android.os.Bundle;
 import android.os.Looper;
 import android.util.Log;
-import com.android.volley.Request;
+import android.view.Gravity;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+
 import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
@@ -39,17 +43,13 @@ import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 import com.mapbox.mapboxsdk.maps.Style;
+import com.mapbox.mapboxsdk.maps.UiSettings;
+
+import io.github.yavski.fabspeeddial.FabSpeedDial;
+import io.github.yavski.fabspeeddial.SimpleMenuListenerAdapter;
 
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.nio.charset.MalformedInputException;
-
-import static android.preference.PreferenceManager.getDefaultSharedPreferences;
-
-public class MainActivity extends AppCompatActivity{
+public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, Style.OnStyleLoaded, OnSuccessListener<Location> {
     // Constant used to identify the number of the permission asked
     private static final int MY_PERMISSION_REQUEST_ACCESS_FINE_LOCATION = 1;
     private MapView mapView;
@@ -59,36 +59,33 @@ public class MainActivity extends AppCompatActivity{
     private boolean requestingLocationUpdates = true;
 
     // Variable used for current location
+
     private FusedLocationProviderClient fusedLocationClient;
 
-    //private Location lastKnownLocation;
+    private Location lastLocationUpdate;
+    private Location lastKnownLocation;
 
     private RequestQueue requestQueue;
     private SharedPreferences.Editor editor;
     private LocationComponent locationComponent;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Mapbox.getInstance(this, "pk.eyJ1Ijoidml0YWxlZWMiLCJhIjoiY2szNzBpZmxxMDZ3cjNoamxtemlkY3hoaCJ9.a_b71-bIkpNdQklD3mTKFw");
         setContentView(R.layout.activity_main);
-        mapView = findViewById(R.id.mapView);
-        mapView.onCreate(savedInstanceState);
 
         //Verifying if the user has given the permissions
-
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            //Permission were never asked
+            Log.d("Permission", "Permissions were not asked");
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                     MY_PERMISSION_REQUEST_ACCESS_FINE_LOCATION);
         }
-
-        //Permission are granted
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        Log.d("Permission", "Permissions are granted");
 
         //Retrieve last current position, in case current position is not working
-        //fusedLocationClient.getLastLocation().addOnSuccessListener(this, this); //TO DO: se errore, milano
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        fusedLocationClient.getLastLocation().addOnSuccessListener(this, this);
 
         locationCallback = new LocationCallback() {
             @Override
@@ -98,41 +95,78 @@ public class MainActivity extends AppCompatActivity{
                     Log.d("Location update", "Setting last position, no new locations received");
                     CameraPosition position = new CameraPosition.Builder()
                             .target(new LatLng(45.283828,09.105340))
-                            .zoom(15)
-                            .tilt(30)
+                            .zoom(16)
+                            .tilt(60)
                             .build();
                     Log.d("Camera Position", "Map setted on last location");
                     mapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(position));
                     return;
                 }
-                for (Location location : locationResult.getLocations()) {
-                    Log.d("Location update", "New location received" + location.toString());
+                for (Location l : locationResult.getLocations()) {
+                    Log.d("Location update", "New location received" + l.toString());
+                    lastLocationUpdate = l;
                 }
             }
         };
 
-        mapView.getMapAsync(new OnMapReadyCallback() {
+        mapView = findViewById(R.id.mapView);
+        mapView.onCreate(savedInstanceState);
+        mapView.getMapAsync(this);
+
+        FabSpeedDial fabSpeedDial = (FabSpeedDial) findViewById(R.id.fab_menu);
+        fabSpeedDial.setMenuListener(new SimpleMenuListenerAdapter() {
             @Override
-            public void onMapReady(@NonNull MapboxMap MBMap) {
-                mapboxMap = MBMap;
-                mapboxMap.setStyle(Style.MAPBOX_STREETS, new Style.OnStyleLoaded() {
-                    @Override
-                    public void onStyleLoaded(@NonNull Style style) {
-                        // Map is set up and the style has loaded. Now you can add data or make other map adjustments.
-                        // TO DO: change style (?)
-                        enableLocationComponent(style);
-                    }
-                });
+            public boolean onMenuItemSelected(MenuItem menuItem) {
+                //menuItems
+                if (R.id.fab_ranking == menuItem.getItemId()) {
+                    Log.d("FabMenu", "Ranking clicked");
+                    RankingFragment rankingFragment = new RankingFragment();
+                    Log.d("FabMenu", "Ranking fragment created");
+                    addFragment(rankingFragment);
+                }
+                else if (R.id.fab_user == menuItem.getItemId()) {
+                    Log.d("FabMenu", "User clicked");
+                    // TO DO: User fragment
+                }
+                else {
+                    Log.d("FabMenu", "Other clicked");
+                    // TO DO: Info application fragment
+                }
+                return true;
             }
         });
+
+    }
+
+    @Override
+    public void onMapReady(@NonNull MapboxMap MBMap) {
+        mapboxMap = MBMap;
+        CameraPosition currentPosition = new CameraPosition.Builder()
+                .target(new LatLng(lastKnownLocation.getLatitude(),lastKnownLocation.getLongitude()))
+                .zoom(16)
+                .tilt(60)
+                .build();
+        Log.d("MapReady", "Map is ready and setted on current location");
+        mapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(currentPosition));
+        mapboxMap.setStyle(Style.LIGHT, this);
+    }
+
+    @Override
+    public void onStyleLoaded(@NonNull Style style) {
+        // Map is set up and the style has loaded. Now you can add data or make other map adjustments.
+        Log.d("StyleLoaded", "Style adjustments with UiSettings done");
+        enableLocationComponent(style);
+        UiSettings uiSettings = mapboxMap.getUiSettings();
+        uiSettings.setCompassEnabled(true);
+        uiSettings.setCompassFadeFacingNorth(false);
+        uiSettings.setAllGesturesEnabled(true);
+        uiSettings.setLogoGravity(Gravity.CENTER|Gravity.BOTTOM);
     }
 
     private void enableLocationComponent(Style style) {
         LocationComponent locationComponent = mapboxMap.getLocationComponent();
-
         // Location component options are used to style the user location
         LocationComponentOptions locationComponentOptions = LocationComponentOptions.builder(getApplicationContext())
-                //.layerBelow(layerId)                                                                             // TO DO: play with layers (2, current pos e monster)
                 .bearingTintColor(Color.blue(5))
                 .build();
 
@@ -142,14 +176,8 @@ public class MainActivity extends AppCompatActivity{
                 .build();
 
         locationComponent.activateLocationComponent(locationComponentActivationOptions);
-
-        // Enable to make component visible
         locationComponent.setLocationComponentEnabled(true);
-
-        // Set the component's camera mode
         locationComponent.setCameraMode(CameraMode.TRACKING_GPS_NORTH);
-
-        // Set the component's render mode
         locationComponent.setRenderMode(RenderMode.COMPASS);
     }
 
@@ -165,13 +193,12 @@ public class MainActivity extends AppCompatActivity{
                     // Does nothing and returns to the onCreate method
                 } else {
                     Log.d("Location Request", "Permission is not granted");
-                    // TO DO: Close the application or show a message
+                    // TO DO: Close the application or show a message, dialog fragment
                 }
                 return;
             }
         }
     }
-
 
     @Override
     public void onStart() {
@@ -229,15 +256,37 @@ public class MainActivity extends AppCompatActivity{
         mapView.onSaveInstanceState(outState);
     }
 
-    //NON USIAMO L'ULTIMA POSIZIONE PERCHE' SE SI SPEGNE IL GPS VIENE RIPULITA LA CACHE E QUINDI NON HO PIU' DATI SULL'ULTIMA POSIZIONE
-/*@Override
-public void onSuccess(Location location) {
-    this.lastKnownLocation = location;
-    if (location != null) {
-        Log.d("Last Location", "Last known location" + location.toString());
-    } else {
-        Log.d("Last Location", "Last known location not available");
-    }
-}*/
 
+    @Override
+    public void onSuccess(Location location) {
+        if (location != null) {
+            Log.d("Last Location", "Last known location" + location.toString());
+            this.lastKnownLocation = location;
+        } else {
+            Log.d("Last Location", "Last known location not available (Duomo di Milano)");
+            this.lastKnownLocation = new Location("");
+            this.lastKnownLocation.setLatitude(45.464211);
+            this.lastKnownLocation.setLongitude(9.191383);
+        }
+    }
+
+    public void onClickCenter(View view) {
+        Log.d("Center", "Center method called");
+        CameraPosition position = new CameraPosition.Builder()
+                .target(new LatLng(lastLocationUpdate.getLatitude(), lastLocationUpdate.getLongitude()))
+                .zoom(16)
+                .tilt(60)
+                .build();
+        mapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(position));
+        Log.d("Center", "Centered on user");
+    }
+
+    public void addFragment(Fragment fragment) {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        FrameLayout frameLayout = (FrameLayout) findViewById(R.id.layout);
+        frameLayout.removeAllViews();
+        fragmentTransaction.replace(R.id.layout, fragment).addToBackStack(null).commit();
+        Log.d("Fragment", "Fragment added");
+    }
 }
