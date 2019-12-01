@@ -12,5 +12,6 @@
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#E9D0D0" />
+        android:background="#E9D0D0"
+        android:backgroundTint="#005E2E2E" />
 </androidx.constraintlayout.widget.ConstraintLayout>
