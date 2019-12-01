@@ -10,14 +10,23 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.VectorDrawable;
 import android.location.Location;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -44,6 +53,11 @@ import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 import com.mapbox.mapboxsdk.maps.Style;
 import com.mapbox.mapboxsdk.maps.UiSettings;
+import com.mapbox.mapboxsdk.plugins.annotation.Symbol;
+import com.mapbox.mapboxsdk.plugins.annotation.SymbolManager;
+import com.mapbox.mapboxsdk.plugins.annotation.SymbolOptions;
+
+import java.util.ArrayList;
 
 import io.github.yavski.fabspeeddial.FabSpeedDial;
 import io.github.yavski.fabspeeddial.SimpleMenuListenerAdapter;
@@ -161,6 +175,57 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         uiSettings.setCompassFadeFacingNorth(false);
         uiSettings.setAllGesturesEnabled(true);
         uiSettings.setLogoGravity(Gravity.CENTER|Gravity.BOTTOM);
+
+        // Adding candy images to the style to later show themo on the map
+        VectorDrawable vectorDrawable = (VectorDrawable) getDrawable(R.drawable.ic_candy);
+        Bitmap bitmap = getBitmap(vectorDrawable);
+        style.addImage("candy", bitmap);
+
+        vectorDrawable = (VectorDrawable) getDrawable(R.drawable.ic_candy1);
+        bitmap = getBitmap(vectorDrawable);
+        style.addImage("candy1", bitmap);
+
+        vectorDrawable = (VectorDrawable) getDrawable(R.drawable.ic_candy2);
+        bitmap = getBitmap(vectorDrawable);
+        style.addImage("candy2", bitmap);
+
+        // Adding objects to the map
+        ShownObject[] mapObjects = Model.getInstance().getShownObjects();
+        SymbolManager symbolManager = new SymbolManager(mapView, mapboxMap, style);
+
+        // Allow icons overlap
+        symbolManager.setIconAllowOverlap(true);
+        symbolManager.getIconIgnorePlacement();
+        Log.d("Symbol", "Symbol manager created");
+
+        // Creating symbols
+        for (int i = 0; i<mapObjects.length; i++) {
+            if ("CA".equals(mapObjects[i].getType())) {
+                switch (mapObjects[i].getSize()) {
+                    case "L" :
+                        Symbol symbol = symbolManager.create(new SymbolOptions()
+                                .withLatLng(new LatLng(mapObjects[i].getLat(), mapObjects[i].getLon()))
+                                .withIconImage("candy")
+                        );
+                        break;
+                    case "M" :
+                        Symbol symbol1 = symbolManager.create(new SymbolOptions()
+                                .withLatLng(new LatLng(mapObjects[i].getLat(), mapObjects[i].getLon()))
+                                .withIconImage("candy1")
+                        );
+                        break;
+                    case "S" :
+                        Symbol symbol2 = symbolManager.create(new SymbolOptions()
+                                .withLatLng(new LatLng(mapObjects[i].getLat(), mapObjects[i].getLon()))
+                                .withIconImage("candy2")
+                        );
+                        break;
+                }
+            }
+            else {
+
+            }
+        }
     }
 
     private void enableLocationComponent(Style style) {
@@ -289,4 +354,16 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         fragmentTransaction.replace(R.id.layout, fragment).addToBackStack(null).commit();
         Log.d("Fragment", "Fragment added");
     }
+
+    // Mathod found on the internet to create a bitmap (since resource decoder returns null)
+
+    private static Bitmap getBitmap(VectorDrawable vectorDrawable) {
+        Bitmap bitmap = Bitmap.createBitmap(vectorDrawable.getIntrinsicWidth(),
+                vectorDrawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        vectorDrawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+        vectorDrawable.draw(canvas);
+        return bitmap;
+    }
+
 }

@@ -24,17 +24,24 @@ public class Model {
         return image;
     }
 
+    public void setImage(String image) {
+        this.image = image;
+    }
     public JSONObject getId() {
         return this.id;
     }
 
-    public void setImage(String image) {
-        this.image = image;
+    public void setId(JSONObject id) {
+        this.id = id;
     }
 
+    public User[] getUsers() {
+        return this.users;
+    }
 
-    public void setId(JSONObject id){ this.id = id; }
-
+    public ShownObject[] getShownObjects() {
+        return shownObjects;
+    }
 
     public ShownObject getShownObjectById(int id) {
         for (int i = 0; i < shownObjects.length; i++) {
@@ -64,9 +71,7 @@ public class Model {
         this.users = users;
     }
 
-    public User[] getUsers() {
-        return this.users;
-    }
+
 
 
     /*
