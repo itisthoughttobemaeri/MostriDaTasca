@@ -5,10 +5,12 @@
     android:id="@+id/fragmentRanking"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#00EBD1BC"
     android:orientation="vertical">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:background="#E9D0D0" />
 </androidx.constraintlayout.widget.ConstraintLayout>

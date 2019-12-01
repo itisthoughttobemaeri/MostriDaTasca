@@ -17,6 +17,7 @@ public class ViewHolder extends RecyclerView.ViewHolder{
     public ViewHolder(View itemView){
         super(itemView);
         Log.d("ViewHolder", "Constructor called");
+        image = itemView.findViewById(R.id.image);
         number = itemView.findViewById(R.id.number);
         name = itemView.findViewById(R.id.username);
     }
@@ -24,7 +25,7 @@ public class ViewHolder extends RecyclerView.ViewHolder{
     public void setText(User user, int rank){
         // Handling ranking
         Log.i("ViewHolder", user.toString());
-        number.setText(Integer.toString(rank));
+        number.setText(Integer.toString(rank) + "°");
         name.setText(user.getUsername());
     }
 }
