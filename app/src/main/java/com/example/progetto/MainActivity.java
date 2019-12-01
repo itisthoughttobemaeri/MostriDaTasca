@@ -176,7 +176,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         uiSettings.setAllGesturesEnabled(true);
         uiSettings.setLogoGravity(Gravity.CENTER|Gravity.BOTTOM);
 
-        // Adding candy images to the style to later show themo on the map
+        // Adding candy images to the style to later show them on the map
         VectorDrawable vectorDrawable = (VectorDrawable) getDrawable(R.drawable.ic_candy);
         Bitmap bitmap = getBitmap(vectorDrawable);
         style.addImage("candy", bitmap);
@@ -188,6 +188,20 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         vectorDrawable = (VectorDrawable) getDrawable(R.drawable.ic_candy2);
         bitmap = getBitmap(vectorDrawable);
         style.addImage("candy2", bitmap);
+
+        // Adding monsters images to the style to later show them on the map
+
+        vectorDrawable = (VectorDrawable) getDrawable(R.drawable.ic_octopus);
+        bitmap = getBitmap(vectorDrawable);
+        style.addImage("octopus", bitmap);
+
+        vectorDrawable = (VectorDrawable) getDrawable(R.drawable.ic_unicorn);
+        bitmap = getBitmap(vectorDrawable);
+        style.addImage("unicorn", bitmap);
+
+        vectorDrawable = (VectorDrawable) getDrawable(R.drawable.ic_mask);
+        bitmap = getBitmap(vectorDrawable);
+        style.addImage("mask", bitmap);
 
         // Adding objects to the map
         ShownObject[] mapObjects = Model.getInstance().getShownObjects();
@@ -223,7 +237,26 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }
             }
             else {
-
+                switch (mapObjects[i].getSize()) {
+                    case "L":
+                        Symbol symbol = symbolManager.create(new SymbolOptions()
+                                .withLatLng(new LatLng(mapObjects[i].getLat(), mapObjects[i].getLon()))
+                                .withIconImage("unicorn")
+                        );
+                        break;
+                    case "M":
+                        Symbol symbol1 = symbolManager.create(new SymbolOptions()
+                                .withLatLng(new LatLng(mapObjects[i].getLat(), mapObjects[i].getLon()))
+                                .withIconImage("mask")
+                        );
+                        break;
+                    case "S":
+                        Symbol symbol2 = symbolManager.create(new SymbolOptions()
+                                .withLatLng(new LatLng(mapObjects[i].getLat(), mapObjects[i].getLon()))
+                                .withIconImage("octopus")
+                        );
+                        break;
+                }
             }
         }
     }
