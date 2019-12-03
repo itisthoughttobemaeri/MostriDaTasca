@@ -77,6 +77,13 @@ public class MapObjectFragment extends Fragment {
                         ShownObject element = Model.getInstance().getShownObjectById(id);
                         size.setText(element.getSize());
                         name.setText(element.getName());
+
+                        if (element.getType().equals("MO")) {
+                            type.setText("Monster");
+                        } else {
+                            type.setText("Candy");
+                        }
+
                         // TO DO : finish
                     }
                 },
