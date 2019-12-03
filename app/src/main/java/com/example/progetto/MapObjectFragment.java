@@ -83,7 +83,6 @@ public class MapObjectFragment extends Fragment {
                         } else {
                             type.setText("Candy");
                         }
-
                         // TO DO : finish
                     }
                 },
