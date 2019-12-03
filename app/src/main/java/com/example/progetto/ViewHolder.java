@@ -1,6 +1,5 @@
 package com.example.progetto;
 
-import android.media.Image;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
@@ -19,7 +18,7 @@ public class ViewHolder extends RecyclerView.ViewHolder{
         Log.d("ViewHolder", "Constructor called");
         image = itemView.findViewById(R.id.image);
         number = itemView.findViewById(R.id.number);
-        name = itemView.findViewById(R.id.username);
+        name = itemView.findViewById(R.id.user_name);
     }
 
     public void setText(User user, int rank){

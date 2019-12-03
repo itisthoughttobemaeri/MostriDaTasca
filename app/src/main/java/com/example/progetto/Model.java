@@ -27,6 +27,7 @@ public class Model {
     public void setImage(String image) {
         this.image = image;
     }
+
     public JSONObject getId() {
         return this.id;
     }
@@ -70,9 +71,6 @@ public class Model {
     public void refreshUsers(User[] users){
         this.users = users;
     }
-
-
-
 
     /*
     public boolean isDistanceCandyOk(int id) {
