@@ -155,6 +155,12 @@ public class SplashScreen extends AppCompatActivity {
         // Json object must be session id
         String url = "https://ewserver.di.unimi.it/mobicomp/mostri/setprofile.php";
         String json = "{'session_id':" + string + ", 'username': 'Player', 'image':' '}";
+
+        // TO DO : set image default
+
+        Model.getInstance().setLP(100);
+        Model.getInstance().setXP(0);
+
         JSONObject jsonObject = null;
         try {
             jsonObject = new JSONObject(json);

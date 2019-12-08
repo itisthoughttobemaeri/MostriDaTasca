@@ -84,6 +84,21 @@ public class ResultFragment extends Fragment {
                             e.printStackTrace();
                         }
 
+                        int LP_points = 0;
+                        try {
+                            LP_points = Integer.parseInt(response.getString("LP"));
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+                        int XP_points = 0;
+                        try {
+                            XP_points = Integer.parseInt(response.getString("XP"));
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+
                         if (userStatus.equals("true")) {
                             // The user died
                             image.setImageResource(R.drawable.ic_tombstone);
@@ -91,7 +106,18 @@ public class ResultFragment extends Fragment {
                         }
                         else {
                             // The user survived
-                            // TO DO:
+                            if (Model.getInstance().getLP()<LP_points) {
+                                // The user picked up a candy
+
+                            } else if (Model.getInstance().getXP()<XP_points) {
+                                // The user won against the monster
+
+                            } else if (Model.getInstance().getLP()>LP_points) {
+                                // The user lost a battle
+
+                            } else if (Model.getInstance().getLP()==LP_points || Model.getInstance().getXP()==XP_points) {
+                                // The user didn't earn anything
+                            }
                         }
 
 

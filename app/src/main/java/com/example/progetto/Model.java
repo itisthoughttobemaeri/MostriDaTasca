@@ -17,8 +17,27 @@ public class Model {
     private JSONObject id;
     private String image;                       // TO DO: shared preferences
 
+    private int LP;
+    private int XP;
+
     private ShownObject[] shownObjects;
     private User[] users;
+
+    public int getLP() {
+        return LP;
+    }
+
+    public int getXP() {
+        return XP;
+    }
+
+    public void setLP(int LP) {
+        this.LP = LP;
+    }
+
+    public void setXP(int XP) {
+        this.XP = XP;
+    }
 
     public String getImage() {
         return image;
