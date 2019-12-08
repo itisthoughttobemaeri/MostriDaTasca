@@ -52,8 +52,9 @@
 
     <Button
         android:id="@+id/ok"
-        android:layout_width="match_parent"
+        android:layout_width="230dp"
         android:layout_height="wrap_content"
+        android:layout_gravity="center"
         android:text="Ok"
         android:visibility="visible" />
 
