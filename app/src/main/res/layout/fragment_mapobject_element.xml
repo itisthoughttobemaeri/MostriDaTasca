@@ -33,7 +33,7 @@
         android:text="size" />
 
     <TextView
-        android:id="@+id/points"
+        android:id="@+id/LP"
         android:layout_width="match_parent"
         android:layout_height="130dp"
         android:gravity="center"
@@ -55,14 +55,16 @@
             android:id="@+id/confirm"
             android:layout_width="200dp"
             android:layout_height="wrap_content"
-            android:text="YES" />
+            android:text="YES"
+            android:visibility="gone" />
 
         <Button
             android:id="@+id/deny"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="NO" />
+            android:text="NO"
+            android:visibility="gone" />
     </LinearLayout>
 
 </LinearLayout>

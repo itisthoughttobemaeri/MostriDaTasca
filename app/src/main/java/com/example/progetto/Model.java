@@ -15,7 +15,7 @@ public class Model {
     }
 
     private JSONObject id;
-    private String image;                       // TO DO: save both in Room
+    private String image;                       // TO DO: shared preferences
 
     private ShownObject[] shownObjects;
     private User[] users;
@@ -53,17 +53,6 @@ public class Model {
         return null;
     }
 
-    /*
-    public User getUserById(String id) {
-        for (int i=0; i<20; i++) {
-            if (users[i].getId().equals(id)) {
-                return users[i];
-            }
-        }
-        return null;
-    }
-    */
-
     public void refreshShownObjects(ShownObject[] shownObjects) {
         this.shownObjects = shownObjects;
     }
@@ -71,29 +60,5 @@ public class Model {
     public void refreshUsers(User[] users){
         this.users = users;
     }
-
-    /*
-    public boolean isDistanceCandyOk(int id) {
-        Candy c = getCandyById(id);
-        double x = Math.abs(this.longitude - c.getLon());
-        double y = Math.abs(this.latitude - c.getLat());
-        double value = Math.sqrt((x*x) + (y*y));
-        if (value < 50) {
-            return true;
-        }
-        return false;
-    }
-
-    public boolean isDistanceMonsterOk(int id) {
-        Monster m = getMonsterById(id);
-        double x = Math.abs(this.longitude - m.getLon());
-        double y = Math.abs(this.latitude - m.getLat());
-        double value = Math.sqrt((x*x) + (y*y));
-        if (value < 50) {
-            return true;
-        }
-        return false;
-    }
-    */
 
 }
