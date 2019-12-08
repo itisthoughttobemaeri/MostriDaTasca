@@ -1,5 +1,6 @@
 package com.example.progetto;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -78,6 +79,28 @@ public class MapObjectFragment extends Fragment {
                         TextView name = getActivity().findViewById(R.id.name);
                         TextView size = getActivity().findViewById(R.id.size);
 
+                        Button yes = getActivity().findViewById(R.id.confirm);
+                        yes.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                Log.d("ElementFragment", "Confirm clicked");
+                                // Create new fragment
+                                ResultFragment resultFragment = new ResultFragment(id);
+                                ((MainActivity) getActivity()).addFragment(resultFragment);
+                            }
+                        });
+
+                        Button no = getActivity().findViewById(R.id.deny);
+                        no.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                Log.d("ElementFragment", "Deny clicked");
+                                // Go back to map
+                                Intent intent = new Intent(getActivity().getApplicationContext(), MainActivity.class);
+                                startActivity(intent);
+                            }
+                        });
+
                         ShownObject element = Model.getInstance().getShownObjectById(id);
                         size.setText(element.getSize());
                         name.setText(element.getName());
@@ -117,9 +140,7 @@ public class MapObjectFragment extends Fragment {
                             }
                         }
 
-                        if ( new MainActivity().isDistanceObjectOk(id) ) {
-                            Button yes = getActivity().findViewById(R.id.confirm);
-                            Button no = getActivity().findViewById(R.id.deny);
+                        if ( ((MainActivity) getActivity()).isDistanceObjectOk(id) ) {
                             if (element.getType().equals("MO")) {
                                 fight.setText("Wanna fight this monster?");
                                 yes.setVisibility(yes.VISIBLE);
@@ -127,6 +148,7 @@ public class MapObjectFragment extends Fragment {
                             } else {
                                 fight.setText("Wanna grab this candy?");
                                 yes.setVisibility(yes.VISIBLE);
+                                no.setVisibility(no.VISIBLE);
                             }
                         }
                         else {
@@ -135,8 +157,8 @@ public class MapObjectFragment extends Fragment {
                             } else {
                                 fight.setText("You are too far to grab this candy");
                             }
-                            Button no = getActivity().findViewById(R.id.deny);
                             no.setVisibility(no.VISIBLE);
+                            yes.setVisibility(yes.GONE);
                         }
 
 
@@ -154,14 +176,4 @@ public class MapObjectFragment extends Fragment {
         Log.d("VolleyQueue", "Image request added");
     }
 
-    public void onClick (View view) {
-        switch (view.getId()) {
-            case R.id.confirm :
-                Log.d("MapObject", "Grab candy/fight monster");
-                // Create new fragment
-            case R.id.deny :
-                Log.d("MapObject", "Refused to fight/went back");
-                // Go back to map
-        }
-    }
 }

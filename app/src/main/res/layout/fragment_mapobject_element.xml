@@ -55,6 +55,7 @@
             android:id="@+id/confirm"
             android:layout_width="200dp"
             android:layout_height="wrap_content"
+            android:onClick="onClick"
             android:text="YES"
             android:visibility="gone" />
 

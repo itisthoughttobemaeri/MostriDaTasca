@@ -36,7 +36,7 @@ public class SplashScreen extends AppCompatActivity {
 
         SharedPreferences sharedPreferences = getSharedPreferences("Shared Preferences", 0);
         editor = sharedPreferences.edit();
-        editor.remove("session_id");
+        //editor.remove("session_id");
         editor.commit();
         Log.d("If", Boolean.toString(!sharedPreferences.contains("session_id")));
 
@@ -145,8 +145,9 @@ public class SplashScreen extends AppCompatActivity {
 
         requestQueue.add(JSONRequest_data_download);
         Log.d("VolleyQueue", "Second request added");
-    }
 
+        // TO DO: get profile with information
+    }
 
 
     // Method used to call the request to initialize the username
