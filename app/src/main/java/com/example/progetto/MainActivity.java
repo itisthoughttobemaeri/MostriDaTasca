@@ -20,6 +20,7 @@ import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.VectorDrawable;
+import android.location.Address;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
@@ -39,6 +40,9 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
@@ -53,9 +57,13 @@ import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 import com.mapbox.mapboxsdk.maps.Style;
 import com.mapbox.mapboxsdk.maps.UiSettings;
+import com.mapbox.mapboxsdk.plugins.annotation.OnSymbolClickListener;
 import com.mapbox.mapboxsdk.plugins.annotation.Symbol;
 import com.mapbox.mapboxsdk.plugins.annotation.SymbolManager;
 import com.mapbox.mapboxsdk.plugins.annotation.SymbolOptions;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 
@@ -140,7 +148,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }
                 else if (R.id.fab_user == menuItem.getItemId()) {
                     Log.d("FabMenu", "User clicked");
-                    // TO DO: User fragment
+                    UserFragment userFragment = new UserFragment();
+                    Log.d("FabMenu", "User fragment created");
+                    addFragment(userFragment);
                 }
                 else {
                     Log.d("FabMenu", "Other clicked");
@@ -212,26 +222,35 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         symbolManager.getIconIgnorePlacement();
         Log.d("Symbol", "Symbol manager created");
 
+        Gson gson = new Gson();
+
+
         // Creating symbols
         for (int i = 0; i<mapObjects.length; i++) {
+            // Adding id data as json element to each symbol
+            JsonObject element = gson.fromJson("{'id': " + mapObjects[i].getId() + "}", JsonObject.class);
             if ("CA".equals(mapObjects[i].getType())) {
                 switch (mapObjects[i].getSize()) {
                     case "L" :
                         Symbol symbol = symbolManager.create(new SymbolOptions()
                                 .withLatLng(new LatLng(mapObjects[i].getLat(), mapObjects[i].getLon()))
                                 .withIconImage("candy")
+                                .withData(element)
                         );
+
                         break;
                     case "M" :
                         Symbol symbol1 = symbolManager.create(new SymbolOptions()
                                 .withLatLng(new LatLng(mapObjects[i].getLat(), mapObjects[i].getLon()))
                                 .withIconImage("candy1")
+                                .withData(element)
                         );
                         break;
                     case "S" :
                         Symbol symbol2 = symbolManager.create(new SymbolOptions()
                                 .withLatLng(new LatLng(mapObjects[i].getLat(), mapObjects[i].getLon()))
                                 .withIconImage("candy2")
+                                .withData(element)
                         );
                         break;
                 }
@@ -242,23 +261,35 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         Symbol symbol = symbolManager.create(new SymbolOptions()
                                 .withLatLng(new LatLng(mapObjects[i].getLat(), mapObjects[i].getLon()))
                                 .withIconImage("unicorn")
+                                .withData(element)
                         );
                         break;
                     case "M":
                         Symbol symbol1 = symbolManager.create(new SymbolOptions()
                                 .withLatLng(new LatLng(mapObjects[i].getLat(), mapObjects[i].getLon()))
                                 .withIconImage("mask")
+                                .withData(element)
                         );
                         break;
                     case "S":
                         Symbol symbol2 = symbolManager.create(new SymbolOptions()
                                 .withLatLng(new LatLng(mapObjects[i].getLat(), mapObjects[i].getLon()))
                                 .withIconImage("octopus")
+                                .withData(element)
                         );
                         break;
                 }
             }
         }
+
+        symbolManager.addClickListener(new OnSymbolClickListener() {
+            @Override
+            public void onAnnotationClick(Symbol symbol) {
+                Log.d("Symbol", "Symbol clicked");
+                MapObjectFragment mapObjectFragment = new MapObjectFragment(symbol.getData());
+                addFragment(mapObjectFragment);
+            }
+        });
     }
 
     private void enableLocationComponent(Style style) {
@@ -397,6 +428,35 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         vectorDrawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
         vectorDrawable.draw(canvas);
         return bitmap;
+    }
+
+    public boolean isDistanceObjectOk(int id) {
+        ShownObject c = Model.getInstance().getShownObjectById(id);
+        //double distance = distance(lastLocationUpdate.getLatitude(), lastLocationUpdate.getLongitude(), c.getLat(), c.getLon(), "K" );
+        double distance = 0.03;
+        if (distance <= 0.05) {
+            return true;
+        }
+        return false;
+    }
+
+    private static double distance(double lat1, double lon1, double lat2, double lon2, String unit) {
+        if ((lat1 == lat2) && (lon1 == lon2)) {
+            return 0;
+        }
+        else {
+            double theta = lon1 - lon2;
+            double dist = Math.sin(Math.toRadians(lat1)) * Math.sin(Math.toRadians(lat2)) + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) * Math.cos(Math.toRadians(theta));
+            dist = Math.acos(dist);
+            dist = Math.toDegrees(dist);
+            dist = dist * 60 * 1.1515;
+            if (unit.equals("K")) {
+                dist = dist * 1.609344;
+            } else if (unit.equals("N")) {
+                dist = dist * 0.8684;
+            }
+            return (dist);
+        }
     }
 
 }

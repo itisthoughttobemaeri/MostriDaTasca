@@ -4,20 +4,25 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:background="#00A02323"
     android:gravity="center_horizontal|center_vertical"
     android:orientation="vertical">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="#00212799"
+        android:backgroundTint="#00AA2626"
         android:gravity="center_horizontal|center_vertical"
         android:orientation="horizontal"
+        android:outlineAmbientShadowColor="#00C01616"
         android:paddingVertical="16dp">
 
         <TextView
             android:id="@+id/number"
             android:layout_width="52dp"
             android:layout_height="wrap_content"
+            android:background="#00971313"
             android:paddingRight="16dp"
             android:text="1°"
             android:textAlignment="textStart"
@@ -31,7 +36,7 @@
             android:tint="#908C23" />
 
         <TextView
-            android:id="@+id/username"
+            android:id="@+id/user_name"
             android:layout_width="244dp"
             android:layout_height="wrap_content"
             android:paddingLeft="16dp"
