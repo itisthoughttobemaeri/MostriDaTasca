@@ -25,15 +25,23 @@ import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
+import android.util.Base64;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
+import com.android.volley.Request;
 import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -134,6 +142,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mapView = findViewById(R.id.mapView);
         mapView.onCreate(savedInstanceState);
         mapView.getMapAsync(this);
+
+        setProfileInformation();
 
         FabSpeedDial fabSpeedDial = (FabSpeedDial) findViewById(R.id.fab_menu);
         fabSpeedDial.setMenuListener(new SimpleMenuListenerAdapter() {
@@ -460,4 +470,49 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
+    private void setProfileInformation() {
+        requestQueue = Volley.newRequestQueue(getApplicationContext());
+        String url = "https://ewserver.di.unimi.it/mobicomp/mostri/getprofile.php";
+        Log.d("MainActivity", "Display points");
+
+        JsonObjectRequest JSONRequest_user_download = new JsonObjectRequest(
+                Request.Method.POST,
+                url,
+                Model.getInstance().getId(),
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        Log.d("Points", String.valueOf(response));
+
+                        String xp = null;
+                        String lp = null;
+                        try {
+                            xp = response.getString("xp");
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        try {
+                            lp = response.getString("lp");
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        TextView textView_xp = findViewById(R.id.xp_points);
+                        TextView textView_lp = findViewById(R.id.lp_points);
+                        textView_lp.setText(lp + " LP");
+                        textView_xp.setText(xp + " XP");
+
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        error.printStackTrace();
+                        // TO DO: handle error 401 & 400
+                    }
+                }
+        );
+        requestQueue.add(JSONRequest_user_download);
+        Log.d("VolleyQueue", "Points request added");
+
+    }
 }

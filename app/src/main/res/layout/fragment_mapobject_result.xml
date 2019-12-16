@@ -21,8 +21,10 @@
         android:layout_width="match_parent"
         android:layout_height="85dp"
         android:layout_marginHorizontal="20dp"
+        android:fontFamily="sans-serif-black"
         android:gravity="center"
         android:text="win/lost/died"
+        android:textColor="#000000"
         android:textSize="24sp" />
 
     <TextView
@@ -32,6 +34,7 @@
         android:layout_marginHorizontal="20dp"
         android:gravity="center"
         android:text="points gained"
+        android:textColor="#000000"
         android:textSize="14sp"
         android:textStyle="bold"
         android:visibility="visible" />
@@ -62,6 +65,7 @@
             android:gravity="start|left"
             android:text="0"
             android:textAlignment="textStart"
+            android:textColor="#000000"
             android:textSize="24sp"
             android:textStyle="bold"
             android:visibility="visible" />
@@ -82,6 +86,7 @@
             android:gravity="start|left"
             android:text="0"
             android:textAlignment="textStart"
+            android:textColor="#000000"
             android:textSize="24sp"
             android:textStyle="bold"
             android:visibility="visible" />
@@ -94,6 +99,7 @@
         android:layout_height="88dp"
         android:layout_gravity="center"
         android:layout_marginTop="70dp"
+        android:background="@android:color/transparent"
         android:foreground="@drawable/ic_confirm"
         android:visibility="visible" />
 

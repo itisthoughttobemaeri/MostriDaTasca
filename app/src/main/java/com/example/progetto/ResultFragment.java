@@ -107,8 +107,9 @@ public class ResultFragment extends Fragment {
                             // The user survived
                             LP.setText(Integer.toString(LP_points));
                             XP.setText(Integer.toString(XP_points));
-
-                            if (Model.getInstance().getLP()<LP_points) {
+                            int currLP = Model.getInstance().getLP();
+                            // Model points are the past points
+                            if (currLP<LP_points) {
                                 // The user picked up a candy
                                 image.setImageResource(R.drawable.ic_success);
                                 result.setText("You picked up the candy!");
@@ -129,6 +130,7 @@ public class ResultFragment extends Fragment {
 
                             } else if (Model.getInstance().getLP()==LP_points || Model.getInstance().getXP()==XP_points) {
                                 // The user didn't earn anything
+                                image.setImageResource(R.drawable.ic_sorry);
                                 result.setText("You didn't lose neither earn anything...");
                                 pointsGained.setVisibility(View.GONE);
 
