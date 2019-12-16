@@ -74,7 +74,6 @@ public class MapObjectFragment extends Fragment {
                         Log.d("VolleyRequest", "Success");
                         ImageView image = getActivity().findViewById(R.id.image);
                         TextView points = getActivity().findViewById(R.id.LP);
-                        TextView type = getActivity().findViewById(R.id.type);
                         TextView fight = getActivity().findViewById(R.id.fight);
                         TextView name = getActivity().findViewById(R.id.name);
                         TextView size = getActivity().findViewById(R.id.size);
@@ -119,7 +118,6 @@ public class MapObjectFragment extends Fragment {
                         // Setting information
 
                         if (element.getType().equals("MO")) {
-                            type.setText("Monster");
                             if (element.getSize().equals("S")) {
                                 points.setText("1 XP");
                             } else if (element.getSize().equals("M")) {
@@ -129,7 +127,6 @@ public class MapObjectFragment extends Fragment {
                                 points.setText("10 XP");
                             }
                         } else {
-                            type.setText("Candy");
                             if (element.getSize().equals("S")) {
                                 points.setText("0-50 LP");
                             } else if (element.getSize().equals("M")) {

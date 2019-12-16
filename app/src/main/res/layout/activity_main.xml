@@ -17,13 +17,23 @@
         <com.mapbox.mapboxsdk.maps.MapView
             android:id="@+id/mapView"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent" >
+
+            <LinearLayout
+                android:id="@+id/layout_popup"
+                android:layout_width="347dp"
+                android:layout_height="613dp"
+                android:orientation="vertical"
+                android:layout_gravity="center">
+
+            </LinearLayout>
+        </com.mapbox.mapboxsdk.maps.MapView>
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/fab_center"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="top|left"
+            android:layout_gravity="bottom|right"
             android:layout_margin="16dp"
             android:onClick="onClickCenter"
             android:visibility="visible"
@@ -40,4 +50,5 @@
             app:fabMenu="@layout/menu" />
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
 </FrameLayout>

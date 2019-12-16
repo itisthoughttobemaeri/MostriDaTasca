@@ -413,10 +413,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void addFragment(Fragment fragment) {
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        FrameLayout frameLayout = (FrameLayout) findViewById(R.id.layout);
-        frameLayout.removeAllViews();
-        fragmentTransaction.replace(R.id.layout, fragment).addToBackStack(null).commit();
-        Log.d("Fragment", "Fragment added");
+            FrameLayout frameLayout = (FrameLayout) findViewById(R.id.layout);
+            frameLayout.removeAllViews();
+            fragmentTransaction.replace(R.id.layout, fragment).addToBackStack(null).commit();
+            Log.d("Fragment", "Fragment added full");
+
     }
 
     // Mathod found on the internet to create a bitmap (since resource decoder returns null)
