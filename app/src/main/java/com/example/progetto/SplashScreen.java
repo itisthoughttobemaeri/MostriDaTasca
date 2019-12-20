@@ -4,10 +4,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
-
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.Fragment;
-
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -15,12 +12,9 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import static android.preference.PreferenceManager.getDefaultSharedPreferences;
 
 public class SplashScreen extends AppCompatActivity {
 
@@ -100,14 +94,57 @@ public class SplashScreen extends AppCompatActivity {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-            doRequest(Model.getInstance().getId());
+
+            doMapRequest(Model.getInstance().getId());
         }
+    }
+
+    // Method used to call the request to initialize the username
+
+    private void doSetProfile(String string) {
+        // Json object must be session id
+        String url = "https://ewserver.di.unimi.it/mobicomp/mostri/setprofile.php";
+        String json = "{'session_id':" + string + ", 'username': 'Player', 'image': '' }";
+
+        // TO DO : set image default
+
+        Model.getInstance().setLP(100);
+        Model.getInstance().setXP(0);
+
+        JSONObject jsonObject = null;
+        try {
+            jsonObject = new JSONObject(json);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        JsonObjectRequest JSONRequest_user_update = new JsonObjectRequest(
+                Request.Method.POST,
+                url,
+                jsonObject,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        Log.d("VolleyJson", "Server is working");
+                        doMapRequest(Model.getInstance().getId());
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        error.printStackTrace();
+                        // TO DO: handle error 401 & 400
+                    }
+                }
+        );
+        requestQueue.add(JSONRequest_user_update);
+        Log.d("VolleyQueue", "Set profile request added");
     }
 
 
     // Method used to call the request to initialize the objects
 
-    private void doRequest(final JSONObject jsonObject) {
+    private void doMapRequest(final JSONObject jsonObject) {
         // Json object must be session id
         String url = "https://ewserver.di.unimi.it/mobicomp/mostri/getmap.php";
 
@@ -147,49 +184,6 @@ public class SplashScreen extends AppCompatActivity {
         Log.d("VolleyQueue", "Second request added");
 
         // TO DO: get profile with information
-    }
-
-
-    // Method used to call the request to initialize the username
-
-    private void doSetProfile(String string) {
-        // Json object must be session id
-        String url = "https://ewserver.di.unimi.it/mobicomp/mostri/setprofile.php";
-        String json = "{'session_id':" + string + ", 'username': 'Player', 'image': '' }";
-
-        // TO DO : set image default
-
-        Model.getInstance().setLP(100);
-        Model.getInstance().setXP(0);
-
-        JSONObject jsonObject = null;
-        try {
-            jsonObject = new JSONObject(json);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        JsonObjectRequest JSONRequest_user_update = new JsonObjectRequest(
-                Request.Method.POST,
-                url,
-                jsonObject,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        Log.d("VolleyJson", "Server is working");
-                        doRequest(Model.getInstance().getId());
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        error.printStackTrace();
-                        // TO DO: handle error 401 & 400
-                    }
-                }
-        );
-        requestQueue.add(JSONRequest_user_update);
-        Log.d("VolleyQueue", "Set profile request added");
     }
 }
 

@@ -3,6 +3,7 @@ package com.example.progetto;
 import androidx.annotation.NonNull;
 import androidx.annotation.Px;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.collection.LongSparseArray;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
@@ -10,7 +11,10 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import android.Manifest;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -24,6 +28,8 @@ import android.location.Address;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.IBinder;
 import android.os.Looper;
 import android.util.Log;
 import android.view.Gravity;
@@ -33,7 +39,12 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
+import com.android.volley.Request;
 import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -57,15 +68,22 @@ import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 import com.mapbox.mapboxsdk.maps.Style;
 import com.mapbox.mapboxsdk.maps.UiSettings;
+import com.mapbox.mapboxsdk.plugins.annotation.Annotation;
 import com.mapbox.mapboxsdk.plugins.annotation.OnSymbolClickListener;
 import com.mapbox.mapboxsdk.plugins.annotation.Symbol;
 import com.mapbox.mapboxsdk.plugins.annotation.SymbolManager;
 import com.mapbox.mapboxsdk.plugins.annotation.SymbolOptions;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import io.github.yavski.fabspeeddial.FabSpeedDial;
 import io.github.yavski.fabspeeddial.SimpleMenuListenerAdapter;
@@ -91,13 +109,18 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private SharedPreferences.Editor editor;
     private LocationComponent locationComponent;
 
+    private SymbolManager symbolManager;
+    private Runnable runnable;
+    private Handler handler;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Mapbox.getInstance(this, "pk.eyJ1Ijoidml0YWxlZWMiLCJhIjoiY2szNzBpZmxxMDZ3cjNoamxtemlkY3hoaCJ9.a_b71-bIkpNdQklD3mTKFw");
         setContentView(R.layout.activity_main);
 
-        //Verifying if the user has given the permissions
+
+        // Verifying if the user has given the permissions
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             Log.d("Permission", "Permissions were not asked");
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
@@ -105,7 +128,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
         Log.d("Permission", "Permissions are granted");
 
-        //Retrieve last current position, in case current position is not working
+        // Retrieve last current position, in case current position is not working
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         fusedLocationClient.getLastLocation().addOnSuccessListener(this, this);
 
@@ -113,10 +136,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onLocationResult(LocationResult locationResult) {
                 if (locationResult == null) {
-                    //Current position is not working, setting camera on last location
+                    // Current position is not working, setting camera on last location
                     Log.d("Location update", "Setting last position, no new locations received");
                     CameraPosition position = new CameraPosition.Builder()
-                            .target(new LatLng(45.283828,09.105340))
+                            .target(new LatLng(45.283828, 09.105340))
                             .zoom(16)
                             .tilt(60)
                             .build();
@@ -135,31 +158,79 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mapView.onCreate(savedInstanceState);
         mapView.getMapAsync(this);
 
-        FabSpeedDial fabSpeedDial = (FabSpeedDial) findViewById(R.id.fab_menu);
+        FabSpeedDial fabSpeedDial = findViewById(R.id.fab_menu);
         fabSpeedDial.setMenuListener(new SimpleMenuListenerAdapter() {
             @Override
             public boolean onMenuItemSelected(MenuItem menuItem) {
-                //menuItems
+                // menuItems
                 if (R.id.fab_ranking == menuItem.getItemId()) {
                     Log.d("FabMenu", "Ranking clicked");
                     RankingFragment rankingFragment = new RankingFragment();
                     Log.d("FabMenu", "Ranking fragment created");
                     addFragment(rankingFragment);
-                }
-                else if (R.id.fab_user == menuItem.getItemId()) {
+                } else if (R.id.fab_user == menuItem.getItemId()) {
                     Log.d("FabMenu", "User clicked");
                     UserFragment userFragment = new UserFragment();
                     Log.d("FabMenu", "User fragment created");
                     addFragment(userFragment);
-                }
-                else {
+                } else {
                     Log.d("FabMenu", "Other clicked");
-                    // TO DO: Info application fragment
+                    // TODO: Info application fragment
                 }
                 return true;
             }
         });
 
+        ScheduledExecutorService ses = Executors.newScheduledThreadPool(1);
+
+        runnable = new Runnable () {
+            @Override
+            public void run() {
+                requestQueue = Volley.newRequestQueue(getApplicationContext());
+                Log.d("Runnable", "Runnable is running");
+                String url = "https://ewserver.di.unimi.it/mobicomp/mostri/getmap.php";
+
+                try {
+                    JsonObjectRequest JSONRequest_data_download = new JsonObjectRequest(
+                            Request.Method.POST,
+                            url,
+                            Model.getInstance().getId(),
+                            new Response.Listener<JSONObject>() {
+                                @Override
+                                public void onResponse(JSONObject response) {
+                                    Log.d("VolleyJson", "Server is working");
+                                    // Handle JSON data
+                                    try {
+                                        Gson gson = new Gson();
+                                        JSONArray mapObjects = response.getJSONArray("mapobjects");
+                                        // JSON data converted into array
+                                        ShownObject[] shownObjects = gson.fromJson(mapObjects.toString(), ShownObject[].class);
+                                        Log.d("VolleyJson", "This is the first object from the server" + shownObjects[0].toString());
+                                        Model.getInstance().refreshShownObjects(shownObjects);
+                                        //cleanSymbols();
+                                        addSymbolsToMap();
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            },
+                            new Response.ErrorListener() {
+                                @Override
+                                public void onErrorResponse(VolleyError error) {
+                                    error.printStackTrace();
+                                    // TODO: handle error 401 & 400
+                                }
+                            }
+                    );
+                    requestQueue.add(JSONRequest_data_download);
+                    Log.d("VolleyQueue", "Update request added");
+                }
+                catch ( Exception e ) {
+                    e.printStackTrace();
+                }
+            }
+        };
+        ses.scheduleAtFixedRate(runnable, 5, 60, TimeUnit.SECONDS);
     }
 
     @Override
@@ -170,7 +241,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .zoom(16)
                 .tilt(60)
                 .build();
-        Log.d("MapReady", "Map is ready and setted on current location");
+        Log.d("MapReady", "Map is ready and set on current location");
         mapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(currentPosition));
         mapboxMap.setStyle(Style.LIGHT, this);
     }
@@ -184,7 +255,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         uiSettings.setCompassEnabled(true);
         uiSettings.setCompassFadeFacingNorth(false);
         uiSettings.setAllGesturesEnabled(true);
-        uiSettings.setLogoGravity(Gravity.CENTER|Gravity.BOTTOM);
+        uiSettings.setLogoGravity(Gravity.CENTER | Gravity.BOTTOM);
 
         // Adding candy images to the style to later show them on the map
         VectorDrawable vectorDrawable = (VectorDrawable) getDrawable(R.drawable.ic_candy);
@@ -200,7 +271,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         style.addImage("candy2", bitmap);
 
         // Adding monsters images to the style to later show them on the map
-
         vectorDrawable = (VectorDrawable) getDrawable(R.drawable.ic_octopus);
         bitmap = getBitmap(vectorDrawable);
         style.addImage("octopus", bitmap);
@@ -213,83 +283,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         bitmap = getBitmap(vectorDrawable);
         style.addImage("mask", bitmap);
 
-        // Adding objects to the map
-        ShownObject[] mapObjects = Model.getInstance().getShownObjects();
-        SymbolManager symbolManager = new SymbolManager(mapView, mapboxMap, style);
-
-        // Allow icons overlap
-        symbolManager.setIconAllowOverlap(true);
-        symbolManager.getIconIgnorePlacement();
-        Log.d("Symbol", "Symbol manager created");
-
-        Gson gson = new Gson();
-
-
-        // Creating symbols
-        for (int i = 0; i<mapObjects.length; i++) {
-            // Adding id data as json element to each symbol
-            JsonObject element = gson.fromJson("{'id': " + mapObjects[i].getId() + "}", JsonObject.class);
-            if ("CA".equals(mapObjects[i].getType())) {
-                switch (mapObjects[i].getSize()) {
-                    case "L" :
-                        Symbol symbol = symbolManager.create(new SymbolOptions()
-                                .withLatLng(new LatLng(mapObjects[i].getLat(), mapObjects[i].getLon()))
-                                .withIconImage("candy")
-                                .withData(element)
-                        );
-
-                        break;
-                    case "M" :
-                        Symbol symbol1 = symbolManager.create(new SymbolOptions()
-                                .withLatLng(new LatLng(mapObjects[i].getLat(), mapObjects[i].getLon()))
-                                .withIconImage("candy1")
-                                .withData(element)
-                        );
-                        break;
-                    case "S" :
-                        Symbol symbol2 = symbolManager.create(new SymbolOptions()
-                                .withLatLng(new LatLng(mapObjects[i].getLat(), mapObjects[i].getLon()))
-                                .withIconImage("candy2")
-                                .withData(element)
-                        );
-                        break;
-                }
-            }
-            else {
-                switch (mapObjects[i].getSize()) {
-                    case "L":
-                        Symbol symbol = symbolManager.create(new SymbolOptions()
-                                .withLatLng(new LatLng(mapObjects[i].getLat(), mapObjects[i].getLon()))
-                                .withIconImage("unicorn")
-                                .withData(element)
-                        );
-                        break;
-                    case "M":
-                        Symbol symbol1 = symbolManager.create(new SymbolOptions()
-                                .withLatLng(new LatLng(mapObjects[i].getLat(), mapObjects[i].getLon()))
-                                .withIconImage("mask")
-                                .withData(element)
-                        );
-                        break;
-                    case "S":
-                        Symbol symbol2 = symbolManager.create(new SymbolOptions()
-                                .withLatLng(new LatLng(mapObjects[i].getLat(), mapObjects[i].getLon()))
-                                .withIconImage("octopus")
-                                .withData(element)
-                        );
-                        break;
-                }
-            }
-        }
-
-        symbolManager.addClickListener(new OnSymbolClickListener() {
-            @Override
-            public void onAnnotationClick(Symbol symbol) {
-                Log.d("Symbol", "Symbol clicked");
-                MapObjectFragment mapObjectFragment = new MapObjectFragment(symbol.getData());
-                addFragment(mapObjectFragment);
-            }
-        });
+        symbolManager = new SymbolManager(mapView, mapboxMap, style);
+        addSymbolsToMap();
     }
 
     private void enableLocationComponent(Style style) {
@@ -311,7 +306,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     // Method used to request user permission
-
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permission, int[] grantResults) {
         switch (requestCode) {
@@ -322,7 +316,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     // Does nothing and returns to the onCreate method
                 } else {
                     Log.d("Location Request", "Permission is not granted");
-                    // TO DO: Close the application or show a message, dialog fragment
+                    // TODO: Close the application or show a message, dialog fragment
                 }
                 return;
             }
@@ -345,7 +339,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     // Method to receive location updates
-
     private void startLocationUpdates() {
         LocationRequest locationRequest = LocationRequest.create();
         locationRequest.setInterval(1000);
@@ -419,8 +412,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         Log.d("Fragment", "Fragment added");
     }
 
-    // Mathod found on the internet to create a bitmap (since resource decoder returns null)
-
+    // Method found on the internet to create a bitmap (since resource decoder returns null)
     private static Bitmap getBitmap(VectorDrawable vectorDrawable) {
         Bitmap bitmap = Bitmap.createBitmap(vectorDrawable.getIntrinsicWidth(),
                 vectorDrawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
@@ -459,4 +451,93 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
+    public void addSymbolsToMap() {
+        Gson gson = new Gson();
+
+        // Adding objects to the map
+        ShownObject[] mapObjects = Model.getInstance().getShownObjects();
+
+        // Allow icons overlap
+        symbolManager.setIconAllowOverlap(true);
+        symbolManager.getIconIgnorePlacement();
+        Log.d("Symbol", "Symbol manager created");
+
+        // Creating symbols
+        for (int i = 0; i<mapObjects.length; i++) {
+            // Adding id data as json element to each symbol
+            JsonObject element = gson.fromJson("{'id': " + mapObjects[i].getId() + "}", JsonObject.class);
+            if ("CA".equals(mapObjects[i].getType())) {
+                switch (mapObjects[i].getSize()) {
+                    case "L" :
+                        Symbol symbol = symbolManager.create(new SymbolOptions()
+                                .withLatLng(new LatLng(mapObjects[i].getLat(), mapObjects[i].getLon()))
+                                .withIconImage("candy")
+                                .withData(element)
+                        );
+
+                        break;
+                    case "M" :
+                        Symbol symbol1 = symbolManager.create(new SymbolOptions()
+                                .withLatLng(new LatLng(mapObjects[i].getLat(), mapObjects[i].getLon()))
+                                .withIconImage("candy1")
+                                .withData(element)
+                        );
+                        break;
+                    case "S" :
+                        Symbol symbol2 = symbolManager.create(new SymbolOptions()
+                                .withLatLng(new LatLng(mapObjects[i].getLat(), mapObjects[i].getLon()))
+                                .withIconImage("candy2")
+                                .withData(element)
+                        );
+                        break;
+                }
+            }
+            else {
+                switch (mapObjects[i].getSize()) {
+                    case "L":
+                        Symbol symbol = symbolManager.create(new SymbolOptions()
+                                .withLatLng(new LatLng(mapObjects[i].getLat(), mapObjects[i].getLon()))
+                                .withIconImage("unicorn")
+                                .withData(element)
+                        );
+                        break;
+                    case "M":
+                        Symbol symbol1 = symbolManager.create(new SymbolOptions()
+                                .withLatLng(new LatLng(mapObjects[i].getLat(), mapObjects[i].getLon()))
+                                .withIconImage("mask")
+                                .withData(element)
+                        );
+                        break;
+                    case "S":
+                        Symbol symbol2 = symbolManager.create(new SymbolOptions()
+                                .withLatLng(new LatLng(mapObjects[i].getLat(), mapObjects[i].getLon()))
+                                .withIconImage("octopus")
+                                .withData(element)
+                        );
+                        break;
+                }
+            }
+        }
+
+        symbolManager.addClickListener(new OnSymbolClickListener() {
+            @Override
+            public void onAnnotationClick(Symbol symbol) {
+                Log.d("Symbol", "Symbol clicked");
+                MapObjectFragment mapObjectFragment = new MapObjectFragment(symbol.getData());
+                addFragment(mapObjectFragment);
+            }
+        });
+    }
+
+    public void cleanSymbols() {
+        Log.d("SymbolMarker", "cleanSymbol called");
+        symbolManager.onDestroy();
+
+        List<Symbol> symbols = new ArrayList<>();
+        LongSparseArray<Symbol> symbolArray = symbolManager.getAnnotations();
+        for (int i = 0; i < symbolArray.size(); i++) {
+            symbols.add(symbolArray.valueAt(i));
+        }
+        symbolManager.delete(symbols);
+    }
 }

@@ -24,7 +24,7 @@ public class ViewHolder extends RecyclerView.ViewHolder{
     public void setText(User user, int rank){
         // Handling ranking
         Log.i("ViewHolder", user.toString());
-        number.setText(Integer.toString(rank) + "°");
+        number.setText(rank + "°");
         name.setText(user.getUsername());
     }
 }
