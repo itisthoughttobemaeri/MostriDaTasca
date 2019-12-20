@@ -5,12 +5,13 @@
     android:layout_width="match_parent">
     <item
         android:id="@+id/fab_user"
-        android:icon="@drawable/ic_person_black_24dp"/>
+        />
     <item
         android:id="@+id/fab_ranking"
         android:icon="@drawable/ic_poll_black_24dp"
         />
     <item
         android:id="@+id/fab_other"
-        android:icon="@drawable/ic_question"/>
+        android:icon="@drawable/ic_question"
+        />
 </menu>

@@ -12,6 +12,7 @@ public class ShownObject {
 
     private String image;
 
+
     public int getId() {
         return id;
     }

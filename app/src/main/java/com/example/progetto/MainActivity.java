@@ -3,6 +3,7 @@ package com.example.progetto;
 import androidx.annotation.NonNull;
 import androidx.annotation.Px;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.collection.LongSparseArray;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
@@ -78,6 +79,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import io.github.yavski.fabspeeddial.FabSpeedDial;
 import io.github.yavski.fabspeeddial.SimpleMenuListenerAdapter;
@@ -102,6 +104,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private RequestQueue requestQueue;
     private SharedPreferences.Editor editor;
     private LocationComponent locationComponent;
+
+    private SymbolManager symbolManager;
+    private Style mapStyle;
 
 
     @Override
@@ -192,6 +197,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onStyleLoaded(@NonNull Style style) {
+        mapStyle = style;
         // Map is set up and the style has loaded. Now you can add data or make other map adjustments.
         Log.d("StyleLoaded", "Style adjustments with UiSettings done");
         enableLocationComponent(style);
@@ -200,10 +206,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         uiSettings.setCompassFadeFacingNorth(false);
         uiSettings.setAllGesturesEnabled(true);
         uiSettings.setLogoGravity(Gravity.CENTER|Gravity.BOTTOM);
-
         addImagesToStyle(style);
         addObjectsToMap(style);
 
+        // Method to update markers
         callApi();
     }
 
@@ -458,7 +464,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         // Adding objects to the map
 
         ShownObject[] mapObjects = Model.getInstance().getShownObjects();
-        SymbolManager symbolManager = new SymbolManager(mapView, mapboxMap, style);
+        symbolManager = new SymbolManager(mapView, mapboxMap, style);
 
         // Allow icons overlap
         symbolManager.setIconAllowOverlap(true);
@@ -479,7 +485,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                                 .withIconImage("candy")
                                 .withData(element)
                         );
-
                         break;
                     case "M" :
                         Symbol symbol1 = symbolManager.create(new SymbolOptions()
@@ -540,7 +545,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         final Runnable runnable = new Runnable() {
             @Override
             public void run() {
-                Log.d("Running", "running every x millisec");
+                Log.d("Running", "Running every x millisec");
                 JsonObjectRequest JSONRequest_data_update = new JsonObjectRequest(
                         Request.Method.POST,
                         url,
@@ -548,8 +553,35 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         new Response.Listener<JSONObject>() {
                             @Override
                             public void onResponse(JSONObject response) {
-                                Log.d("VolleyJson", "Server is working");
+                                Log.d("VolleyJson", "Server is refreshing");
                                 // Handle JSON data
+                                try {
+                                    Gson gson = new Gson();
+                                    JSONArray mapObjects = response.getJSONArray("mapobjects");
+
+                                    // JSON data converted into array
+
+                                    ShownObject[] shownObjects = gson.fromJson(mapObjects.toString(), ShownObject[].class);
+                                    Log.d("VolleyJson", "This is the first object from the server (refreshing)" + shownObjects[0].toString());
+                                    Model.getInstance().refreshShownObjects(shownObjects);
+
+                                    // Deleting all the symbols
+
+                                    List<Symbol> symbols = new ArrayList<>();
+                                    LongSparseArray<Symbol> symbolArray = symbolManager.getAnnotations();
+                                    for (int i = 0; i < symbolArray.size(); i++) {
+                                        symbols.add(symbolArray.valueAt(i));
+                                    }
+                                    symbolManager.delete(symbols);
+
+                                    // Re-adding symbols
+
+                                    addObjectsToMap(mapStyle);
+
+                                }
+                                catch (JSONException e){
+                                    e.printStackTrace();
+                                }
                             }
                         },
                         new Response.ErrorListener() {
@@ -562,7 +594,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 );
                 RequestQueue requestQueue = Volley.newRequestQueue(getApplicationContext());
                 requestQueue.add(JSONRequest_data_update);
-                handler.postDelayed(this, 100000);
+                handler.postDelayed(this, 10000);
             }
         };
         handler.post(runnable);

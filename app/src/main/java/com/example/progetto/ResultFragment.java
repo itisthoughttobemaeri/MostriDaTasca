@@ -123,7 +123,7 @@ public class ResultFragment extends Fragment {
 
                             } else if (Model.getInstance().getLP()==LP_points || Model.getInstance().getXP()==XP_points) {
                                 // The user didn't earn anything
-                                image.setImageResource(R.drawable.ic_win);
+                                image.setImageResource(R.drawable.ic_okay);
                                 result.setText("You didn't lose neither earn anything...");
                                 pointsGained.setVisibility(View.GONE);
 

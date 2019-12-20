@@ -21,6 +21,7 @@ public class Model {
     private int XP;
 
     private ShownObject[] shownObjects;
+
     private User[] users;
 
     public int getLP() {
