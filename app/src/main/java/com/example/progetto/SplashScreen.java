@@ -106,10 +106,7 @@ public class SplashScreen extends AppCompatActivity {
         String url = "https://ewserver.di.unimi.it/mobicomp/mostri/setprofile.php";
         String json = "{'session_id':" + string + ", 'username': 'Player', 'image': '' }";
 
-        // TO DO : set image default
-
-        Model.getInstance().setLP(100);
-        Model.getInstance().setXP(0);
+        // TODO : set image default
 
         JSONObject jsonObject = null;
         try {
@@ -182,8 +179,6 @@ public class SplashScreen extends AppCompatActivity {
 
         requestQueue.add(JSONRequest_data_download);
         Log.d("VolleyQueue", "Second request added");
-
-        // TO DO: get profile with information
     }
 }
 

@@ -32,6 +32,7 @@ public class Model {
     }
 
     public void setLP(int LP) {
+
         this.LP = LP;
     }
 
@@ -39,13 +40,6 @@ public class Model {
         this.XP = XP;
     }
 
-    public String getImage() {
-        return image;
-    }
-
-    public void setImage(String image) {
-        this.image = image;
-    }
 
     public JSONObject getId() {
         return this.id;

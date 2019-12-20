@@ -69,6 +69,8 @@ public class ResultFragment extends Fragment {
                         TextView XP = getActivity().findViewById(R.id.XP);
                         TextView pointsGained = getActivity().findViewById(R.id.pointsGained);
                         Button buttonConfirm = getActivity().findViewById(R.id.ok);
+                        ImageView imageView2 = getActivity().findViewById(R.id.imageView2);
+                        ImageView imageView3 = getActivity().findViewById(R.id.imageView3);
 
                         Boolean userStatus = null;
                         try {
@@ -98,32 +100,30 @@ public class ResultFragment extends Fragment {
                             pointsGained.setVisibility(View.GONE);
                             LP.setVisibility(View.GONE);
                             XP.setVisibility(View.GONE);
+                            imageView2.setVisibility(View.GONE);
+                            imageView3.setVisibility(View.GONE);
                         }
                         else {
                             // The user survived
                             LP.setText(Integer.toString(LP_points));
                             XP.setText(Integer.toString(XP_points));
 
+                            // Model points are the past points
                             if (Model.getInstance().getLP()<LP_points) {
                                 // The user picked up a candy
-                                image.setImageResource(R.drawable.ic_success);
+                                image.setImageResource(R.drawable.ic_win);
                                 result.setText("You picked up the candy!");
                                 pointsGained.setText( "You gained " + (LP_points - Model.getInstance().getLP()) + " LP, so now you have:");
 
                             } else if (Model.getInstance().getXP()<XP_points) {
                                 // The user won against the monster
-                                image.setImageResource(R.drawable.ic_success);
+                                image.setImageResource(R.drawable.ic_win);
                                 result.setText("You won the battle!");
-                                pointsGained.setText( "You gained " + (XP_points - Model.getInstance().getXP()) + " XP and you lost some LP, so now you have:");
-
-                            } else if (Model.getInstance().getLP()>LP_points) {
-                                Log.d("Points", Integer.toString(LP_points));
-                                // The user lost a battle
-                                result.setText("You lost the battle...");
-                                pointsGained.setText( "You lost " + (Model.getInstance().getLP() - LP_points) + " LP, so now you have:");
+                                pointsGained.setText( "You gained " + (XP_points - Model.getInstance().getXP()) + " XP and you lost " +(Model.getInstance().getLP() - LP_points) + " LP, so now you have:");
 
                             } else if (Model.getInstance().getLP()==LP_points || Model.getInstance().getXP()==XP_points) {
                                 // The user didn't earn anything
+                                image.setImageResource(R.drawable.ic_win);
                                 result.setText("You didn't lose neither earn anything...");
                                 pointsGained.setVisibility(View.GONE);
 

@@ -3,7 +3,6 @@ package com.example.progetto;
 import androidx.annotation.NonNull;
 import androidx.annotation.Px;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.collection.LongSparseArray;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
@@ -11,10 +10,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import android.Manifest;
-import android.content.ComponentName;
 import android.content.Context;
-import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -29,15 +25,19 @@ import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.IBinder;
 import android.os.Looper;
+import android.telecom.Call;
+import android.util.Base64;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -68,7 +68,6 @@ import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 import com.mapbox.mapboxsdk.maps.Style;
 import com.mapbox.mapboxsdk.maps.UiSettings;
-import com.mapbox.mapboxsdk.plugins.annotation.Annotation;
 import com.mapbox.mapboxsdk.plugins.annotation.OnSymbolClickListener;
 import com.mapbox.mapboxsdk.plugins.annotation.Symbol;
 import com.mapbox.mapboxsdk.plugins.annotation.SymbolManager;
@@ -79,11 +78,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 
 import io.github.yavski.fabspeeddial.FabSpeedDial;
 import io.github.yavski.fabspeeddial.SimpleMenuListenerAdapter;
@@ -109,9 +103,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private SharedPreferences.Editor editor;
     private LocationComponent locationComponent;
 
-    private SymbolManager symbolManager;
-    private Runnable runnable;
-    private Handler handler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -119,8 +110,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         Mapbox.getInstance(this, "pk.eyJ1Ijoidml0YWxlZWMiLCJhIjoiY2szNzBpZmxxMDZ3cjNoamxtemlkY3hoaCJ9.a_b71-bIkpNdQklD3mTKFw");
         setContentView(R.layout.activity_main);
 
-
-        // Verifying if the user has given the permissions
+        //Verifying if the user has given the permissions
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             Log.d("Permission", "Permissions were not asked");
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
@@ -128,7 +118,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
         Log.d("Permission", "Permissions are granted");
 
-        // Retrieve last current position, in case current position is not working
+        //Retrieve last current position, in case current position is not working
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         fusedLocationClient.getLastLocation().addOnSuccessListener(this, this);
 
@@ -136,10 +126,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onLocationResult(LocationResult locationResult) {
                 if (locationResult == null) {
-                    // Current position is not working, setting camera on last location
+                    //Current position is not working, setting camera on last location
                     Log.d("Location update", "Setting last position, no new locations received");
                     CameraPosition position = new CameraPosition.Builder()
-                            .target(new LatLng(45.283828, 09.105340))
+                            .target(new LatLng(45.283828,09.105340))
                             .zoom(16)
                             .tilt(60)
                             .build();
@@ -158,79 +148,33 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mapView.onCreate(savedInstanceState);
         mapView.getMapAsync(this);
 
-        FabSpeedDial fabSpeedDial = findViewById(R.id.fab_menu);
+        setPointsInformation();
+
+        FabSpeedDial fabSpeedDial = (FabSpeedDial) findViewById(R.id.fab_menu);
         fabSpeedDial.setMenuListener(new SimpleMenuListenerAdapter() {
             @Override
             public boolean onMenuItemSelected(MenuItem menuItem) {
-                // menuItems
+                //menuItems
                 if (R.id.fab_ranking == menuItem.getItemId()) {
                     Log.d("FabMenu", "Ranking clicked");
                     RankingFragment rankingFragment = new RankingFragment();
                     Log.d("FabMenu", "Ranking fragment created");
                     addFragment(rankingFragment);
-                } else if (R.id.fab_user == menuItem.getItemId()) {
+                }
+                else if (R.id.fab_user == menuItem.getItemId()) {
                     Log.d("FabMenu", "User clicked");
                     UserFragment userFragment = new UserFragment();
                     Log.d("FabMenu", "User fragment created");
                     addFragment(userFragment);
-                } else {
+                }
+                else {
                     Log.d("FabMenu", "Other clicked");
-                    // TODO: Info application fragment
+                    // TO DO: Info application fragment
                 }
                 return true;
             }
         });
 
-        ScheduledExecutorService ses = Executors.newScheduledThreadPool(1);
-
-        runnable = new Runnable () {
-            @Override
-            public void run() {
-                requestQueue = Volley.newRequestQueue(getApplicationContext());
-                Log.d("Runnable", "Runnable is running");
-                String url = "https://ewserver.di.unimi.it/mobicomp/mostri/getmap.php";
-
-                try {
-                    JsonObjectRequest JSONRequest_data_download = new JsonObjectRequest(
-                            Request.Method.POST,
-                            url,
-                            Model.getInstance().getId(),
-                            new Response.Listener<JSONObject>() {
-                                @Override
-                                public void onResponse(JSONObject response) {
-                                    Log.d("VolleyJson", "Server is working");
-                                    // Handle JSON data
-                                    try {
-                                        Gson gson = new Gson();
-                                        JSONArray mapObjects = response.getJSONArray("mapobjects");
-                                        // JSON data converted into array
-                                        ShownObject[] shownObjects = gson.fromJson(mapObjects.toString(), ShownObject[].class);
-                                        Log.d("VolleyJson", "This is the first object from the server" + shownObjects[0].toString());
-                                        Model.getInstance().refreshShownObjects(shownObjects);
-                                        //cleanSymbols();
-                                        addSymbolsToMap();
-                                    } catch (JSONException e) {
-                                        e.printStackTrace();
-                                    }
-                                }
-                            },
-                            new Response.ErrorListener() {
-                                @Override
-                                public void onErrorResponse(VolleyError error) {
-                                    error.printStackTrace();
-                                    // TODO: handle error 401 & 400
-                                }
-                            }
-                    );
-                    requestQueue.add(JSONRequest_data_download);
-                    Log.d("VolleyQueue", "Update request added");
-                }
-                catch ( Exception e ) {
-                    e.printStackTrace();
-                }
-            }
-        };
-        ses.scheduleAtFixedRate(runnable, 5, 60, TimeUnit.SECONDS);
     }
 
     @Override
@@ -241,7 +185,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .zoom(16)
                 .tilt(60)
                 .build();
-        Log.d("MapReady", "Map is ready and set on current location");
+        Log.d("MapReady", "Map is ready and setted on current location");
         mapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(currentPosition));
         mapboxMap.setStyle(Style.LIGHT, this);
     }
@@ -255,36 +199,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         uiSettings.setCompassEnabled(true);
         uiSettings.setCompassFadeFacingNorth(false);
         uiSettings.setAllGesturesEnabled(true);
-        uiSettings.setLogoGravity(Gravity.CENTER | Gravity.BOTTOM);
+        uiSettings.setLogoGravity(Gravity.CENTER|Gravity.BOTTOM);
 
-        // Adding candy images to the style to later show them on the map
-        VectorDrawable vectorDrawable = (VectorDrawable) getDrawable(R.drawable.ic_candy);
-        Bitmap bitmap = getBitmap(vectorDrawable);
-        style.addImage("candy", bitmap);
+        addImagesToStyle(style);
+        addObjectsToMap(style);
 
-        vectorDrawable = (VectorDrawable) getDrawable(R.drawable.ic_candy1);
-        bitmap = getBitmap(vectorDrawable);
-        style.addImage("candy1", bitmap);
-
-        vectorDrawable = (VectorDrawable) getDrawable(R.drawable.ic_candy2);
-        bitmap = getBitmap(vectorDrawable);
-        style.addImage("candy2", bitmap);
-
-        // Adding monsters images to the style to later show them on the map
-        vectorDrawable = (VectorDrawable) getDrawable(R.drawable.ic_octopus);
-        bitmap = getBitmap(vectorDrawable);
-        style.addImage("octopus", bitmap);
-
-        vectorDrawable = (VectorDrawable) getDrawable(R.drawable.ic_unicorn);
-        bitmap = getBitmap(vectorDrawable);
-        style.addImage("unicorn", bitmap);
-
-        vectorDrawable = (VectorDrawable) getDrawable(R.drawable.ic_mask);
-        bitmap = getBitmap(vectorDrawable);
-        style.addImage("mask", bitmap);
-
-        symbolManager = new SymbolManager(mapView, mapboxMap, style);
-        addSymbolsToMap();
+        callApi();
     }
 
     private void enableLocationComponent(Style style) {
@@ -306,6 +226,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     // Method used to request user permission
+
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permission, int[] grantResults) {
         switch (requestCode) {
@@ -316,7 +237,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     // Does nothing and returns to the onCreate method
                 } else {
                     Log.d("Location Request", "Permission is not granted");
-                    // TODO: Close the application or show a message, dialog fragment
+                    // TO DO: Close the application or show a message, dialog fragment
                 }
                 return;
             }
@@ -339,6 +260,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     // Method to receive location updates
+
     private void startLocationUpdates() {
         LocationRequest locationRequest = LocationRequest.create();
         locationRequest.setInterval(1000);
@@ -406,13 +328,15 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void addFragment(Fragment fragment) {
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        FrameLayout frameLayout = (FrameLayout) findViewById(R.id.layout);
-        frameLayout.removeAllViews();
-        fragmentTransaction.replace(R.id.layout, fragment).addToBackStack(null).commit();
-        Log.d("Fragment", "Fragment added");
+            FrameLayout frameLayout = (FrameLayout) findViewById(R.id.layout);
+            frameLayout.removeAllViews();
+            fragmentTransaction.replace(R.id.layout, fragment).addToBackStack(null).commit();
+            Log.d("Fragment", "Fragment added full");
+
     }
 
     // Method found on the internet to create a bitmap (since resource decoder returns null)
+
     private static Bitmap getBitmap(VectorDrawable vectorDrawable) {
         Bitmap bitmap = Bitmap.createBitmap(vectorDrawable.getIntrinsicWidth(),
                 vectorDrawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
@@ -451,16 +375,97 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-    public void addSymbolsToMap() {
-        Gson gson = new Gson();
+    private void setPointsInformation() {
+        // Get profile call
+        requestQueue = Volley.newRequestQueue(getApplicationContext());
+        String url = "https://ewserver.di.unimi.it/mobicomp/mostri/getprofile.php";
+        Log.d("MainActivity", "Display points");
 
+        JsonObjectRequest JSONRequest_user_download = new JsonObjectRequest(
+                Request.Method.POST,
+                url,
+                Model.getInstance().getId(),
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        Log.d("Points", String.valueOf(response));
+
+                        String xp = null;
+                        String lp = null;
+                        try {
+                            xp = response.getString("xp");
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        try {
+                            lp = response.getString("lp");
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        TextView textView_xp = findViewById(R.id.xp_points);
+                        TextView textView_lp = findViewById(R.id.lp_points);
+                        textView_lp.setText(lp + " LP");
+                        textView_xp.setText(xp + " XP");
+                        Model.getInstance().setLP(Integer.parseInt(lp));
+                        Model.getInstance().setXP(Integer.parseInt(xp));
+
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        error.printStackTrace();
+                        // TO DO: handle error 401 & 400
+                    }
+                }
+        );
+        requestQueue.add(JSONRequest_user_download);
+        Log.d("VolleyQueue", "Points request added");
+
+    }
+
+    private void addImagesToStyle(Style style) {
+        // Adding candy images to the style to later show them on the map
+
+        VectorDrawable vectorDrawable = (VectorDrawable) getDrawable(R.drawable.ic_candy);
+        Bitmap bitmap = getBitmap(vectorDrawable);
+        style.addImage("candy", bitmap);
+
+        vectorDrawable = (VectorDrawable) getDrawable(R.drawable.ic_candy1);
+        bitmap = getBitmap(vectorDrawable);
+        style.addImage("candy1", bitmap);
+
+        vectorDrawable = (VectorDrawable) getDrawable(R.drawable.ic_candy2);
+        bitmap = getBitmap(vectorDrawable);
+        style.addImage("candy2", bitmap);
+
+        // Adding monsters images to the style to later show them on the map
+
+        vectorDrawable = (VectorDrawable) getDrawable(R.drawable.ic_octopus);
+        bitmap = getBitmap(vectorDrawable);
+        style.addImage("octopus", bitmap);
+
+        vectorDrawable = (VectorDrawable) getDrawable(R.drawable.ic_unicorn);
+        bitmap = getBitmap(vectorDrawable);
+        style.addImage("unicorn", bitmap);
+
+        vectorDrawable = (VectorDrawable) getDrawable(R.drawable.ic_mask);
+        bitmap = getBitmap(vectorDrawable);
+        style.addImage("mask", bitmap);
+    }
+
+    private void addObjectsToMap(Style style) {
         // Adding objects to the map
+
         ShownObject[] mapObjects = Model.getInstance().getShownObjects();
+        SymbolManager symbolManager = new SymbolManager(mapView, mapboxMap, style);
 
         // Allow icons overlap
         symbolManager.setIconAllowOverlap(true);
         symbolManager.getIconIgnorePlacement();
         Log.d("Symbol", "Symbol manager created");
+
+        Gson gson = new Gson();
 
         // Creating symbols
         for (int i = 0; i<mapObjects.length; i++) {
@@ -529,15 +534,37 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
     }
 
-    public void cleanSymbols() {
-        Log.d("SymbolMarker", "cleanSymbol called");
-        symbolManager.onDestroy();
-
-        List<Symbol> symbols = new ArrayList<>();
-        LongSparseArray<Symbol> symbolArray = symbolManager.getAnnotations();
-        for (int i = 0; i < symbolArray.size(); i++) {
-            symbols.add(symbolArray.valueAt(i));
-        }
-        symbolManager.delete(symbols);
+    private void callApi() {
+        final String url = "https://ewserver.di.unimi.it/mobicomp/mostri/getmap.php";
+        final Handler handler = new Handler();
+        final Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                Log.d("Running", "running every x millisec");
+                JsonObjectRequest JSONRequest_data_update = new JsonObjectRequest(
+                        Request.Method.POST,
+                        url,
+                        Model.getInstance().getId(),
+                        new Response.Listener<JSONObject>() {
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                Log.d("VolleyJson", "Server is working");
+                                // Handle JSON data
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                error.printStackTrace();
+                                // TO DO: handle error 401 & 400
+                            }
+                        }
+                );
+                RequestQueue requestQueue = Volley.newRequestQueue(getApplicationContext());
+                requestQueue.add(JSONRequest_data_update);
+                handler.postDelayed(this, 100000);
+            }
+        };
+        handler.post(runnable);
     }
 }
