@@ -15,11 +15,9 @@ import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
 import com.android.volley.Request;
-import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -29,7 +27,6 @@ import org.json.JSONObject;
 
 public class MapObjectFragment extends Fragment {
     private int id;
-    private RequestQueue requestQueue;
 
     public MapObjectFragment(JsonElement jsonElement){
         JsonObject jsonObject = jsonElement.getAsJsonObject();
@@ -45,7 +42,6 @@ public class MapObjectFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        requestQueue = Volley.newRequestQueue(getActivity().getApplicationContext());
 
         String url = "https://ewserver.di.unimi.it/mobicomp/mostri/getimage.php";
 
@@ -73,7 +69,7 @@ public class MapObjectFragment extends Fragment {
                     public void onResponse(JSONObject response) {
                         Log.d("VolleyRequest", "Success");
                         ImageView image = getActivity().findViewById(R.id.image);
-                        TextView points = getActivity().findViewById(R.id.LP);
+                        TextView points = getActivity().findViewById(R.id.user_lp_points);
                         TextView fight = getActivity().findViewById(R.id.fight);
                         TextView name = getActivity().findViewById(R.id.name);
                         TextView size = getActivity().findViewById(R.id.size);
@@ -169,7 +165,7 @@ public class MapObjectFragment extends Fragment {
                     }
                 }
         );
-        requestQueue.add(JSONRequest_image_download);
+        Model.getInstance().getRequestQueue(getActivity().getApplicationContext()).add(JSONRequest_image_download);
         Log.d("VolleyQueue", "Image request added");
     }
 

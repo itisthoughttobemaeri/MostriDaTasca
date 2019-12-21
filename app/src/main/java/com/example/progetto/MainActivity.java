@@ -1,7 +1,7 @@
 package com.example.progetto;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Px;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.collection.LongSparseArray;
 import androidx.core.app.ActivityCompat;
@@ -11,35 +11,27 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import android.Manifest;
-import android.content.Context;
+
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
+
+
 import android.graphics.drawable.VectorDrawable;
-import android.location.Address;
+
 import android.location.Location;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.telecom.Call;
-import android.util.Base64;
 import android.util.Log;
 import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
-
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -101,7 +93,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private Location lastLocationUpdate;
     private Location lastKnownLocation;
 
-    private RequestQueue requestQueue;
     private SharedPreferences.Editor editor;
     private LocationComponent locationComponent;
 
@@ -202,9 +193,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         Log.d("StyleLoaded", "Style adjustments with UiSettings done");
         enableLocationComponent(style);
         UiSettings uiSettings = mapboxMap.getUiSettings();
-        uiSettings.setCompassEnabled(true);
-        uiSettings.setCompassFadeFacingNorth(false);
         uiSettings.setAllGesturesEnabled(true);
+        uiSettings.setCompassEnabled(true);
+        uiSettings.setAttributionGravity(Gravity.CENTER|Gravity.BOTTOM);
         uiSettings.setLogoGravity(Gravity.CENTER|Gravity.BOTTOM);
         addImagesToStyle(style);
         addObjectsToMap(style);
@@ -382,52 +373,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void setPointsInformation() {
-        // Get profile call
-        requestQueue = Volley.newRequestQueue(getApplicationContext());
-        String url = "https://ewserver.di.unimi.it/mobicomp/mostri/getprofile.php";
-        Log.d("MainActivity", "Display points");
-
-        JsonObjectRequest JSONRequest_user_download = new JsonObjectRequest(
-                Request.Method.POST,
-                url,
-                Model.getInstance().getId(),
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        Log.d("Points", String.valueOf(response));
-
-                        String xp = null;
-                        String lp = null;
-                        try {
-                            xp = response.getString("xp");
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                        try {
-                            lp = response.getString("lp");
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                        TextView textView_xp = findViewById(R.id.xp_points);
-                        TextView textView_lp = findViewById(R.id.lp_points);
-                        textView_lp.setText(lp + " LP");
-                        textView_xp.setText(xp + " XP");
-                        Model.getInstance().setLP(Integer.parseInt(lp));
-                        Model.getInstance().setXP(Integer.parseInt(xp));
-
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        error.printStackTrace();
-                        // TO DO: handle error 401 & 400
-                    }
-                }
-        );
-        requestQueue.add(JSONRequest_user_download);
-        Log.d("VolleyQueue", "Points request added");
-
+        TextView textView_xp = findViewById(R.id.xp_points);
+        TextView textView_lp = findViewById(R.id.lp_points);
+        textView_lp.setText(Model.getInstance().getLP() + "");
+        textView_xp.setText(Model.getInstance().getXP() + "");
     }
 
     private void addImagesToStyle(Style style) {
@@ -592,11 +541,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             }
                         }
                 );
-                RequestQueue requestQueue = Volley.newRequestQueue(getApplicationContext());
-                requestQueue.add(JSONRequest_data_update);
+                Model.getInstance().getRequestQueue(getApplicationContext()).add(JSONRequest_data_update);
                 handler.postDelayed(this, 10000);
             }
         };
         handler.post(runnable);
     }
+
 }

@@ -10,22 +10,23 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="#00212799"
-        android:backgroundTint="#00AA2626"
+        android:layout_height="match_parent"
         android:gravity="center_horizontal|center_vertical"
         android:orientation="horizontal"
-        android:outlineAmbientShadowColor="#00C01616"
+        android:outlineAmbientShadowColor="@color/colorAccent"
         android:paddingVertical="16dp">
 
         <TextView
             android:id="@+id/number"
             android:layout_width="52dp"
             android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
             android:background="#00971313"
+            android:fontFamily="@font/akajufont"
             android:paddingRight="16dp"
             android:text="1°"
             android:textAlignment="textStart"
+            android:textColor="#000000"
             android:textSize="24sp" />
 
         <ImageView
@@ -37,11 +38,26 @@
 
         <TextView
             android:id="@+id/user_name"
-            android:layout_width="244dp"
+            android:layout_width="111dp"
             android:layout_height="wrap_content"
+            android:fontFamily="@font/akajufont"
             android:paddingLeft="16dp"
             android:text="username"
-            android:textSize="18sp" />
+            android:textColor="#000000"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="20dp"
+            android:layout_weight="1"
+            android:fontFamily="@font/akajufont"
+            android:gravity="center"
+            android:text="xp points"
+            android:textColor="#000000"
+            android:textSize="14sp" />
 
     </LinearLayout>
 

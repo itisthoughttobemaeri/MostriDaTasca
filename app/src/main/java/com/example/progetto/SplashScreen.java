@@ -2,23 +2,26 @@ package com.example.progetto;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.util.Base64;
 import android.util.Log;
 import androidx.appcompat.app.AppCompatActivity;
 import com.android.volley.Request;
-import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
+
 public class SplashScreen extends AppCompatActivity {
 
-    private RequestQueue requestQueue;
     private SharedPreferences.Editor editor;
     private Thread myThread;
 
@@ -26,11 +29,10 @@ public class SplashScreen extends AppCompatActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.splash_screen);
-        requestQueue = Volley.newRequestQueue(this);
 
         SharedPreferences sharedPreferences = getSharedPreferences("Shared Preferences", 0);
         editor = sharedPreferences.edit();
-        //editor.remove("session_id");
+        editor.remove("session_id");
         editor.commit();
         Log.d("If", Boolean.toString(!sharedPreferences.contains("session_id")));
 
@@ -52,7 +54,7 @@ public class SplashScreen extends AppCompatActivity {
         // The if statement is verifying the 1st execution of the app
 
         if (!sharedPreferences.contains("session_id")) {
-
+            // First execution
             String url = "https://ewserver.di.unimi.it/mobicomp/mostri/register.php";
 
             JsonObjectRequest JSONRequest_user_setup = new JsonObjectRequest(
@@ -83,7 +85,7 @@ public class SplashScreen extends AppCompatActivity {
                         }
                     }
             );
-            requestQueue.add(JSONRequest_user_setup);
+            Model.getInstance().getRequestQueue(getApplicationContext()).add(JSONRequest_user_setup);
             Log.d("VolleyQueue", "First request added");
         }
         else {
@@ -94,8 +96,7 @@ public class SplashScreen extends AppCompatActivity {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-
-            doMapRequest(Model.getInstance().getId());
+            doGetUserRequest(Model.getInstance().getId());
         }
     }
 
@@ -104,9 +105,31 @@ public class SplashScreen extends AppCompatActivity {
     private void doSetProfile(String string) {
         // Json object must be session id
         String url = "https://ewserver.di.unimi.it/mobicomp/mostri/setprofile.php";
-        String json = "{'session_id':" + string + ", 'username': 'Player', 'image': '' }";
+
+        Bitmap bitmapImage = BitmapFactory.decodeResource(getResources(), R.drawable.student);
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        bitmapImage.compress(Bitmap.CompressFormat.PNG, 20, byteArrayOutputStream);
+        byte [] byteArray = byteArrayOutputStream.toByteArray();
+        String imageToUpload = Base64.encodeToString(byteArray,Base64.DEFAULT);
+
+        Log.d("Base64Encoding", imageToUpload);
+
+        String json;
+        if (4*(100000/3)>imageToUpload.length())
+           json = "{'session_id':" + string + ", 'username': 'player', 'image':" + imageToUpload + "}";
+        else
+            json = "{'session_id':" + string + ", 'username': 'player', 'image':'noImage'}";
 
         // TODO : set image default
+
+        Log.d("JsonImage", json);
+
+        try {
+            Model.getInstance().setId(new JSONObject("{session_id:" + string + "}"));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
 
         JSONObject jsonObject = null;
         try {
@@ -123,7 +146,7 @@ public class SplashScreen extends AppCompatActivity {
                     @Override
                     public void onResponse(JSONObject response) {
                         Log.d("VolleyJson", "Server is working");
-                        doMapRequest(Model.getInstance().getId());
+                        doGetUserRequest(Model.getInstance().getId());
                     }
                 },
                 new Response.ErrorListener() {
@@ -134,7 +157,7 @@ public class SplashScreen extends AppCompatActivity {
                     }
                 }
         );
-        requestQueue.add(JSONRequest_user_update);
+        Model.getInstance().getRequestQueue(getApplicationContext()).add(JSONRequest_user_update);
         Log.d("VolleyQueue", "Set profile request added");
     }
 
@@ -177,8 +200,47 @@ public class SplashScreen extends AppCompatActivity {
                 }
         );
 
-        requestQueue.add(JSONRequest_data_download);
+        Model.getInstance().getRequestQueue(getApplicationContext()).add(JSONRequest_data_download);
         Log.d("VolleyQueue", "Second request added");
+    }
+
+    // Method used to call the request to save user points
+
+    private void doGetUserRequest(JSONObject jsonObject) {
+        // Json object must be session id
+        String url = "https://ewserver.di.unimi.it/mobicomp/mostri/getprofile.php";
+
+        JsonObjectRequest JSONRequest_user_data = new JsonObjectRequest(
+                Request.Method.POST,
+                url,
+                jsonObject,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                    Log.d("VolleyJson", "Server is working");
+                    try {
+                        String s = response.getString("username");
+                        Log.d("GetUser", response.toString());
+                        Model.getInstance().setLP(Integer.parseInt(response.getString("lp")));
+                        Model.getInstance().setXP(Integer.parseInt(response.getString("xp")));
+                        Model.getInstance().setUsername(response.getString("username"));
+                        Model.getInstance().setImage(response.getString("img"));
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    doMapRequest(Model.getInstance().getId());
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        error.printStackTrace();
+                        // TODO: handle error 401 & 400
+                    }
+                }
+        );
+        Model.getInstance().getRequestQueue(getApplicationContext()).add(JSONRequest_user_data);
+        Log.d("VolleyQueue", "Get profile request added");
     }
 }
 

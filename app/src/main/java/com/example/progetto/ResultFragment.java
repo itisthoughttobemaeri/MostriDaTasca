@@ -22,7 +22,6 @@ import org.json.JSONObject;
 
 public class ResultFragment extends Fragment {
     private int id;
-    private RequestQueue requestQueue;
 
     public ResultFragment(int id){
         this.id = id;
@@ -36,7 +35,6 @@ public class ResultFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        requestQueue = Volley.newRequestQueue(getActivity().getApplicationContext());
 
         String url = "https://ewserver.di.unimi.it/mobicomp/mostri/fighteat.php";
 
@@ -111,15 +109,15 @@ public class ResultFragment extends Fragment {
                             // Model points are the past points
                             if (Model.getInstance().getLP()<LP_points) {
                                 // The user picked up a candy
-                                image.setImageResource(R.drawable.ic_win);
+                                image.setImageResource(R.drawable.ic_donation);
                                 result.setText("You picked up the candy!");
-                                pointsGained.setText( "You gained " + (LP_points - Model.getInstance().getLP()) + " LP, so now you have:");
+                                pointsGained.setText( "You gained " + (LP_points - Model.getInstance().getLP()) + "LP, so now you have:");
 
                             } else if (Model.getInstance().getXP()<XP_points) {
                                 // The user won against the monster
                                 image.setImageResource(R.drawable.ic_win);
                                 result.setText("You won the battle!");
-                                pointsGained.setText( "You gained " + (XP_points - Model.getInstance().getXP()) + " XP and you lost " +(Model.getInstance().getLP() - LP_points) + " LP, so now you have:");
+                                pointsGained.setText( "You gained " + (XP_points - Model.getInstance().getXP()) + "XP and you lost " +(Model.getInstance().getLP() - LP_points) + "LP, so now you have:");
 
                             } else if (Model.getInstance().getLP()==LP_points || Model.getInstance().getXP()==XP_points) {
                                 // The user didn't earn anything
@@ -151,7 +149,7 @@ public class ResultFragment extends Fragment {
                     }
                 }
         );
-        requestQueue.add(JSONRequest_result);
+        Model.getInstance().getRequestQueue(getActivity().getApplicationContext()).add(JSONRequest_result);
         Log.d("VolleyQueue", "Result request added");
     }
 }

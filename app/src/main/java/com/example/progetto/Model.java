@@ -14,8 +14,11 @@ public class Model {
         return ourInstance;
     }
 
+    private String username;
     private JSONObject id;
-    private String image;                       // TO DO: shared preferences
+    private String image;
+
+    private RequestQueue requestQueue;
 
     private int LP;
     private int XP;
@@ -23,6 +26,13 @@ public class Model {
     private ShownObject[] shownObjects;
 
     private User[] users;
+
+    public RequestQueue getRequestQueue(Context context) {
+        if (requestQueue == null) {
+            requestQueue = Volley.newRequestQueue(context.getApplicationContext());
+        }
+        return requestQueue;
+    }
 
     public int getLP() {
         return LP;
@@ -40,7 +50,6 @@ public class Model {
     public void setXP(int XP) {
         this.XP = XP;
     }
-
 
     public JSONObject getId() {
         return this.id;
@@ -75,4 +84,19 @@ public class Model {
         this.users = users;
     }
 
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
+    }
 }

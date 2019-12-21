@@ -28,7 +28,6 @@ import org.json.JSONObject;
 
 public class RankingFragment extends Fragment {
 
-    private RequestQueue requestQueue;
     private RecyclerView recyclerView;
 
     @Override
@@ -41,7 +40,6 @@ public class RankingFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        requestQueue = Volley.newRequestQueue(getActivity().getApplicationContext());
 
         String url = "https://ewserver.di.unimi.it/mobicomp/mostri/ranking.php";
 
@@ -78,7 +76,7 @@ public class RankingFragment extends Fragment {
                     }
                 }
         );
-        requestQueue.add(JSONRequest_ranking_download);
+        Model.getInstance().getRequestQueue(getActivity().getApplicationContext()).add(JSONRequest_ranking_download);
         Log.d("VolleyQueue", "Ranking request added");
 
         OnBackPressedCallback callback = new OnBackPressedCallback(true /* enabled by default */) {

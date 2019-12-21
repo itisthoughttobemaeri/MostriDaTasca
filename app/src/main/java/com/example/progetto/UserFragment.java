@@ -1,33 +1,27 @@
 package com.example.progetto;
 
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
+import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.fragment.app.Fragment;
 
 import com.android.volley.Request;
-import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class UserFragment extends Fragment {
 
-    private RequestQueue requestQueue;
+public class UserFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater layoutInflater, ViewGroup container, Bundle bundle) {
@@ -35,61 +29,21 @@ public class UserFragment extends Fragment {
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        requestQueue = Volley.newRequestQueue(getActivity().getApplicationContext());
 
-        String url = "https://ewserver.di.unimi.it/mobicomp/mostri/getprofile.php";
-
-        JsonObjectRequest JSONRequest_ranking_download = new JsonObjectRequest(
-                Request.Method.POST,
-                url,
-                Model.getInstance().getId(),
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        try {
-                            Log.d("VolleyJson", (String )response.getString("img"));
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                        // Handle JSON data
-                        TextView textView_name = getActivity().findViewById(R.id.user_name);
-                        TextView textView_lp = getActivity().findViewById(R.id.user_lp);
-                        TextView textView_xp = getActivity().findViewById(R.id.user_xp);
-                        ImageView imageView = getActivity().findViewById(R.id.user_image);
-                        try {
-                            String s = response.getString("username");
-                            textView_name.setText(s);
-                            s = response.getString("lp");
-                            textView_lp.setText(s);
-                            s = response.getString("xp");
-                            textView_xp.setText(s);
-                            if (response.getString("image").equals("null")) {
-                                imageView.setImageResource(R.drawable.ic_unicorn);
-                            }
-                            else {
-                                s = response.getString("image");
-                                byte[] byteArray = Base64.decode(s, Base64.DEFAULT);
-                                Bitmap decodedImage = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
-                                imageView.setImageBitmap(decodedImage);
-                            }
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        error.printStackTrace();
-                        // TO DO: handle error 401 & 400
-                    }
-                }
-        );
-        requestQueue.add(JSONRequest_ranking_download);
-        Log.d("VolleyQueue", "User request added");
-
+        TextView textView_name = getActivity().findViewById(R.id.user_name);
+        TextView textView_lp = getActivity().findViewById(R.id.user_lp_points);
+        TextView textView_xp = getActivity().findViewById(R.id.user_xp_points);
+        //imageView = getActivity().findViewById(R.id.user_image);
+        textView_name.setText(Model.getInstance().getUsername());
+        textView_lp.setText(Model.getInstance().getLP() + "");
+        textView_xp.setText(Model.getInstance().getXP() + "");
+        /*
+        byte[] byteArray = Base64.decode(Model.getInstance().getImage(), Base64.DEFAULT);
+        Bitmap decodedImage = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
+        imageView.setImageBitmap(decodedImage);
+        */
         OnBackPressedCallback callback = new OnBackPressedCallback(true /* enabled by default */) {
             @Override
             public void handleOnBackPressed() {
@@ -100,5 +54,61 @@ public class UserFragment extends Fragment {
             }
         };
         requireActivity().getOnBackPressedDispatcher().addCallback(this, callback);
+
+        Button button = getActivity().findViewById(R.id.edit);
+        button.setOnClickListener(new View.OnClickListener(){
+              @Override
+              public void onClick(View v) {
+                  Log.d("ButtonEdit", "Edit button clicked");
+                  TextView tv = getActivity().findViewById(R.id.user_name);
+                  final String username = tv.getText().toString();
+                  // TODO: get image as well
+
+                  // Getting the id to build the string to POST
+                  String id = null;
+                  try {
+                      id = Model.getInstance().getId().getString("session_id");
+                  } catch (JSONException e) {
+                      e.printStackTrace();
+                  }
+                  String json = "{'session_id':" + id + ", 'username':" + username + "', 'image':'noImage'}";
+
+                  // Building json object
+                  JSONObject jsonObject = null;
+                  try {
+                      jsonObject = new JSONObject(json);
+                  } catch (JSONException e) {
+                      e.printStackTrace();
+                  }
+
+                  String url = "https://ewserver.di.unimi.it/mobicomp/mostri/setprofile.php";
+
+                  JsonObjectRequest JSONRequest_user_edit = new JsonObjectRequest(
+                          Request.Method.POST,
+                          url,
+                          jsonObject,
+                          new Response.Listener<JSONObject>() {
+                              @Override
+                              public void onResponse(JSONObject response) {
+                                  Log.d("VolleyJson", "Server is working");
+                                  Model.getInstance().setUsername(username);
+                                  // TODO: with image as well
+                                  Log.d("ButtonEdit", "New username " + username);
+                                  Intent intent = new Intent(getActivity().getApplicationContext(), MainActivity.class);
+                                  startActivity(intent);
+                              }
+                          },
+                          new Response.ErrorListener() {
+                              @Override
+                              public void onErrorResponse(VolleyError error) {
+                                  error.printStackTrace();
+                                  // TO DO: handle error 401 & 400
+                              }
+                          }
+                  );
+                  Model.getInstance().getRequestQueue(getActivity().getApplicationContext()).add(JSONRequest_user_edit);
+                  Log.d("VolleyQueue", "Set profile request added");
+              }
+        });
     }
 }
