@@ -32,7 +32,7 @@ public class SplashScreen extends AppCompatActivity {
 
         SharedPreferences sharedPreferences = getSharedPreferences("Shared Preferences", 0);
         editor = sharedPreferences.edit();
-        editor.remove("session_id");
+        //editor.remove("session_id");
         editor.commit();
         Log.d("If", Boolean.toString(!sharedPreferences.contains("session_id")));
 

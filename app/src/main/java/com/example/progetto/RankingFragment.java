@@ -57,7 +57,7 @@ public class RankingFragment extends Fragment {
                             JSONArray ranking_array = response.getJSONArray("ranking");
                             // JSON data converted into array
                             User[] rankings = gson.fromJson(ranking_array.toString(), User[].class);
-                            Log.d("VolleyJson", "This is the first user from the server" + rankings[0].toString());
+                            Log.d("VolleyJson", "This is the first user from the server: " + rankings[0].toString());
                             Model.getInstance().refreshUsers(rankings);
                             recyclerView.setLayoutManager(new LinearLayoutManager(getActivity().getApplicationContext()));
                             Adapter adapter = new Adapter(getActivity().getApplicationContext());

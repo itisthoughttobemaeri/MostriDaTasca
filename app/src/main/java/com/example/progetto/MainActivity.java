@@ -26,10 +26,12 @@ import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.print.PrintAttributes;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 import com.android.volley.Request;
@@ -146,28 +148,55 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         setPointsInformation();
 
-        FabSpeedDial fabSpeedDial = (FabSpeedDial) findViewById(R.id.fab_menu);
-        fabSpeedDial.setMenuListener(new SimpleMenuListenerAdapter() {
+
+        final Button user_button = findViewById(R.id.user_button);
+        user_button.setOnClickListener(new View.OnClickListener() {
             @Override
-            public boolean onMenuItemSelected(MenuItem menuItem) {
-                //menuItems
-                if (R.id.fab_ranking == menuItem.getItemId()) {
-                    Log.d("FabMenu", "Ranking clicked");
-                    RankingFragment rankingFragment = new RankingFragment();
-                    Log.d("FabMenu", "Ranking fragment created");
-                    addFragment(rankingFragment);
-                }
-                else if (R.id.fab_user == menuItem.getItemId()) {
-                    Log.d("FabMenu", "User clicked");
-                    UserFragment userFragment = new UserFragment();
-                    Log.d("FabMenu", "User fragment created");
-                    addFragment(userFragment);
+            public void onClick(View v) {
+                Log.d("FabMenu", "User clicked");
+                UserFragment userFragment = new UserFragment();
+                Log.d("FabMenu", "User fragment created");
+                addFragment(userFragment);
+            }
+        });
+
+        final Button ranking_button = findViewById(R.id.ranking_button);
+        ranking_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d("FabMenu", "Ranking clicked");
+                RankingFragment rankingFragment = new RankingFragment();
+                Log.d("FabMenu", "Ranking fragment created");
+                addFragment(rankingFragment);
+            }
+        });
+
+        final Button question_button = findViewById(R.id.question_button);
+        question_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // TODO: info fragment
+            }
+        });
+
+
+        final Button fab = findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d("FabMenu", "Clicked");
+                if (user_button.getVisibility() == View.GONE) {
+                    fab.setBackground(getDrawable(R.drawable.ic_button));
+                    user_button.setVisibility(View.VISIBLE);
+                    ranking_button.setVisibility(View.VISIBLE);
+                    question_button.setVisibility(View.VISIBLE);
                 }
                 else {
-                    Log.d("FabMenu", "Other clicked");
-                    // TO DO: Info application fragment
+                    fab.setBackground(getDrawable(R.drawable.ic_add));
+                    user_button.setVisibility(View.GONE);
+                    ranking_button.setVisibility(View.GONE);
+                    question_button.setVisibility(View.GONE);
                 }
-                return true;
             }
         });
 

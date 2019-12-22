@@ -73,6 +73,7 @@ public class MapObjectFragment extends Fragment {
                         TextView fight = getActivity().findViewById(R.id.fight);
                         TextView name = getActivity().findViewById(R.id.name);
                         TextView size = getActivity().findViewById(R.id.size);
+                        ImageView image_points = getActivity().findViewById(R.id.points_object);
 
                         Button yes = getActivity().findViewById(R.id.confirm);
                         yes.setOnClickListener(new View.OnClickListener() {
@@ -115,21 +116,27 @@ public class MapObjectFragment extends Fragment {
 
                         if (element.getType().equals("MO")) {
                             if (element.getSize().equals("S")) {
-                                points.setText("1 XP");
+                                image_points.setImageResource(R.drawable.favorite);
+                                points.setText("1");
                             } else if (element.getSize().equals("M")) {
-                                points.setText("3 XP");
+                                points.setText("3");
+                                image_points.setImageResource(R.drawable.favorite);
                             }
                             else {
-                                points.setText("10 XP");
+                                points.setText("10");
+                                image_points.setImageResource(R.drawable.favorite);
                             }
                         } else {
                             if (element.getSize().equals("S")) {
-                                points.setText("0-50 LP");
+                                points.setText("0-50");
+                                image_points.setImageResource(R.drawable.heart2);
                             } else if (element.getSize().equals("M")) {
-                                points.setText("25-75 LP");
+                                points.setText("25-75");
+                                image_points.setImageResource(R.drawable.heart2);
                             }
                             else {
-                                points.setText("50-100 LP");
+                                points.setText("50-100");
+                                image_points.setImageResource(R.drawable.heart2);
                             }
                         }
 
