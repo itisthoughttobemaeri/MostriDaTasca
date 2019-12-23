@@ -175,7 +175,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         question_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO: info fragment
+                Log.d("FabMenu", "Info clicked");
+                InfoFragment infoFragment = new InfoFragment();
+                Log.d("FabMenu", "Info fragment created");
+                addFragment(infoFragment);
             }
         });
 
@@ -374,8 +377,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     public boolean isDistanceObjectOk(int id) {
         ShownObject c = Model.getInstance().getShownObjectById(id);
-        //double distance = distance(lastLocationUpdate.getLatitude(), lastLocationUpdate.getLongitude(), c.getLat(), c.getLon(), "K" );
-        double distance = 0.03;
+        double distance = distance(lastLocationUpdate.getLatitude(), lastLocationUpdate.getLongitude(), c.getLat(), c.getLon(), "K" );
+        //double distance = 0.03;
         if (distance <= 0.05) {
             return true;
         }
@@ -415,9 +418,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         Bitmap bitmap = getBitmap(vectorDrawable);
         style.addImage("candy", bitmap);
 
-        vectorDrawable = (VectorDrawable) getDrawable(R.drawable.ic_candy1);
+        vectorDrawable = (VectorDrawable) getDrawable(R.drawable.ic_candy3);
         bitmap = getBitmap(vectorDrawable);
-        style.addImage("candy1", bitmap);
+        style.addImage("candy3", bitmap);
 
         vectorDrawable = (VectorDrawable) getDrawable(R.drawable.ic_candy2);
         bitmap = getBitmap(vectorDrawable);
@@ -429,13 +432,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         bitmap = getBitmap(vectorDrawable);
         style.addImage("octopus", bitmap);
 
-        vectorDrawable = (VectorDrawable) getDrawable(R.drawable.ic_unicorn);
+        vectorDrawable = (VectorDrawable) getDrawable(R.drawable.ic_dragon);
         bitmap = getBitmap(vectorDrawable);
-        style.addImage("unicorn", bitmap);
+        style.addImage("dragon", bitmap);
 
-        vectorDrawable = (VectorDrawable) getDrawable(R.drawable.ic_mask);
+        vectorDrawable = (VectorDrawable) getDrawable(R.drawable.ic_dragon_fly);
         bitmap = getBitmap(vectorDrawable);
-        style.addImage("mask", bitmap);
+        style.addImage("dragonfly", bitmap);
     }
 
     private void addObjectsToMap(Style style) {
@@ -467,7 +470,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     case "M" :
                         Symbol symbol1 = symbolManager.create(new SymbolOptions()
                                 .withLatLng(new LatLng(mapObjects[i].getLat(), mapObjects[i].getLon()))
-                                .withIconImage("candy1")
+                                .withIconImage("candy3")
                                 .withData(element)
                         );
                         break;
@@ -485,14 +488,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     case "L":
                         Symbol symbol = symbolManager.create(new SymbolOptions()
                                 .withLatLng(new LatLng(mapObjects[i].getLat(), mapObjects[i].getLon()))
-                                .withIconImage("unicorn")
+                                .withIconImage("dragon")
                                 .withData(element)
                         );
                         break;
                     case "M":
                         Symbol symbol1 = symbolManager.create(new SymbolOptions()
                                 .withLatLng(new LatLng(mapObjects[i].getLat(), mapObjects[i].getLon()))
-                                .withIconImage("mask")
+                                .withIconImage("dragonfly")
                                 .withData(element)
                         );
                         break;

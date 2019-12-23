@@ -153,9 +153,9 @@ public class MapObjectFragment extends Fragment {
                         }
                         else {
                             if (element.getType().equals("MO")) {
-                                fight.setText("You are too far to fight this monster");
+                                fight.setText("You are too far to fight this!");
                             } else {
-                                fight.setText("You are too far to grab this candy");
+                                fight.setText("You are too far to grab this!");
                             }
                             no.setVisibility(no.VISIBLE);
                             yes.setVisibility(yes.GONE);

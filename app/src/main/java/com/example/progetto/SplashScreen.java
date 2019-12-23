@@ -32,7 +32,7 @@ public class SplashScreen extends AppCompatActivity {
 
         SharedPreferences sharedPreferences = getSharedPreferences("Shared Preferences", 0);
         editor = sharedPreferences.edit();
-        //editor.remove("session_id");
+        editor.remove("session_id");
         editor.commit();
         Log.d("If", Boolean.toString(!sharedPreferences.contains("session_id")));
 
@@ -105,31 +105,13 @@ public class SplashScreen extends AppCompatActivity {
     private void doSetProfile(String string) {
         // Json object must be session id
         String url = "https://ewserver.di.unimi.it/mobicomp/mostri/setprofile.php";
-
-        Bitmap bitmapImage = BitmapFactory.decodeResource(getResources(), R.drawable.student);
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        bitmapImage.compress(Bitmap.CompressFormat.PNG, 20, byteArrayOutputStream);
-        byte [] byteArray = byteArrayOutputStream.toByteArray();
-        String imageToUpload = Base64.encodeToString(byteArray,Base64.DEFAULT);
-
-        Log.d("Base64Encoding", imageToUpload);
-
-        String json;
-        if (4*(100000/3)>imageToUpload.length())
-           json = "{'session_id':" + string + ", 'username': 'player', 'image':" + imageToUpload + "}";
-        else
-            json = "{'session_id':" + string + ", 'username': 'player', 'image':'noImage'}";
-
-        // TODO : set image default
-
-        Log.d("JsonImage", json);
+        String json = "{'session_id':" + string + ", 'username': 'player', 'image':'null'}";
 
         try {
             Model.getInstance().setId(new JSONObject("{session_id:" + string + "}"));
         } catch (JSONException e) {
             e.printStackTrace();
         }
-
 
         JSONObject jsonObject = null;
         try {

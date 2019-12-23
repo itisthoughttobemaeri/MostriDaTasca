@@ -8,7 +8,7 @@
     android:background="#E9E7D1">
 
     <LinearLayout
-        android:id="@+id/linearLayout3"
+        android:id="@+id/linearLayout"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:background="@drawable/ic_background"
@@ -114,7 +114,7 @@
                 android:id="@+id/confirm"
                 android:layout_width="88dp"
                 android:layout_height="88dp"
-                android:layout_marginRight="20dp"
+                android:layout_marginRight="40dp"
                 android:background="@android:color/transparent"
                 android:foreground="@drawable/ic_confirm"
                 android:minWidth="1dp"
@@ -126,7 +126,6 @@
                 android:id="@+id/deny"
                 android:layout_width="88dp"
                 android:layout_height="88dp"
-                android:layout_marginLeft="20dp"
                 android:background="@android:color/transparent"
                 android:foreground="@drawable/ic_cancel"
                 android:visibility="visible" />

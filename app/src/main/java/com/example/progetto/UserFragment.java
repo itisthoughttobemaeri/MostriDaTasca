@@ -3,6 +3,7 @@ package com.example.progetto;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.ImageDecoder;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -14,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.Nullable;
@@ -27,6 +29,9 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+
 import static android.app.Activity.RESULT_OK;
 
 
@@ -39,7 +44,7 @@ public class UserFragment extends Fragment {
     }
 
     @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
+    public void onViewCreated(final View view, Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         TextView textView_name = getActivity().findViewById(R.id.user_name);
@@ -52,9 +57,8 @@ public class UserFragment extends Fragment {
 
         Log.d("ImageConversion", Model.getInstance().getImage());
 
-        if (Model.getInstance().getImage().equals("null") || Model.getInstance().getImage().length()>4*100000/3) {
+        if (Model.getInstance().getImage().equals("null"))
             imageView.setImageResource(R.drawable.ic_student);
-        }
         else {
             byte[] byteArray = Base64.decode(Model.getInstance().getImage(), Base64.DEFAULT);
             Bitmap decodedImage = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
@@ -76,10 +80,10 @@ public class UserFragment extends Fragment {
         button.setOnClickListener(new View.OnClickListener(){
               @Override
               public void onClick(View v) {
+                  // Start request to set information on the server
                   Log.d("ButtonEdit", "Edit button clicked");
                   TextView tv = getActivity().findViewById(R.id.user_name);
                   final String username = tv.getText().toString();
-                  // TODO: get image as well
 
                   // Getting the id to build the string to POST
                   String id = null;
@@ -88,7 +92,7 @@ public class UserFragment extends Fragment {
                   } catch (JSONException e) {
                       e.printStackTrace();
                   }
-                  String json = "{'session_id':" + id + ", 'username':" + username + "', 'image':'noImage'}";
+                  String json = "{'session_id':" + id + ", 'username':" + username + "', 'image':'" + Model.getInstance().getImage() + "'}";
 
                   // Building json object
                   JSONObject jsonObject = null;
@@ -109,7 +113,7 @@ public class UserFragment extends Fragment {
                               public void onResponse(JSONObject response) {
                                   Log.d("VolleyJson", "Server is working");
                                   Model.getInstance().setUsername(username);
-                                  // TODO: with image as well
+                                  // Image saved in the Model onActivityResult (where there are controls)
                                   Log.d("ButtonEdit", "New username " + username);
                                   Intent intent = new Intent(getActivity().getApplicationContext(), MainActivity.class);
                                   startActivity(intent);
@@ -119,7 +123,10 @@ public class UserFragment extends Fragment {
                               @Override
                               public void onErrorResponse(VolleyError error) {
                                   error.printStackTrace();
-                                  // TO DO: handle error 401 & 400
+                                  // The image was too big
+                                  Toast.makeText(getActivity().getApplicationContext(), "The image is too big! Couldn't change the image", Toast.LENGTH_LONG).show();
+                                  Model.getInstance().setImage("null");
+                                  onClick(view);
                               }
                           }
                   );
@@ -145,7 +152,19 @@ public class UserFragment extends Fragment {
             Uri imageUri = data.getData();
             imageView.setImageURI(imageUri);
 
-            //TODO: convert image and set image
+            Bitmap bitmap = null;
+            try {
+                bitmap = ImageDecoder.decodeBitmap(ImageDecoder.createSource(getActivity().getContentResolver(), imageUri));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
+            byte[] byteArray = byteArrayOutputStream.toByteArray();
+            String encodedImage = Base64.encodeToString(byteArray, Base64.DEFAULT);
+
+            Log.d("EncodedImage", encodedImage);
+            Model.getInstance().setImage(encodedImage);
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
