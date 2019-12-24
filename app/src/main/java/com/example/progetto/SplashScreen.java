@@ -1,13 +1,18 @@
 package com.example.progetto;
 
+import android.Manifest;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
@@ -21,7 +26,6 @@ import org.json.JSONObject;
 import java.io.ByteArrayOutputStream;
 
 public class SplashScreen extends AppCompatActivity {
-
     private SharedPreferences.Editor editor;
     private Thread myThread;
 
@@ -32,7 +36,7 @@ public class SplashScreen extends AppCompatActivity {
 
         SharedPreferences sharedPreferences = getSharedPreferences("Shared Preferences", 0);
         editor = sharedPreferences.edit();
-        editor.remove("session_id");
+        //editor.remove("session_id");
         editor.commit();
         Log.d("If", Boolean.toString(!sharedPreferences.contains("session_id")));
 
@@ -41,6 +45,7 @@ public class SplashScreen extends AppCompatActivity {
             public void run() {
                 try {
                     sleep(3000);
+
                     Intent intent = new Intent(getApplicationContext(), MainActivity.class);
                     startActivity(intent);
                     finish();

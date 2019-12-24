@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.collection.LongSparseArray;
+
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
@@ -75,15 +76,13 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.github.yavski.fabspeeddial.FabSpeedDial;
-import io.github.yavski.fabspeeddial.SimpleMenuListenerAdapter;
-
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, Style.OnStyleLoaded, OnSuccessListener<Location> {
-    // Constant used to identify the number of the permission asked
-    private static final int MY_PERMISSION_REQUEST_ACCESS_FINE_LOCATION = 1;
     private MapView mapView;
     private MapboxMap mapboxMap;
+
+    // Constant used to identify the number of the permission asked
+    private static final int MY_PERMISSION_REQUEST_ACCESS_FINE_LOCATION = 1;
 
     private LocationCallback locationCallback;
     private boolean requestingLocationUpdates = true;
@@ -108,35 +107,35 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         Mapbox.getInstance(this, "pk.eyJ1Ijoidml0YWxlZWMiLCJhIjoiY2szNzBpZmxxMDZ3cjNoamxtemlkY3hoaCJ9.a_b71-bIkpNdQklD3mTKFw");
         setContentView(R.layout.activity_main);
 
-        //Verifying if the user has given the permissions
+        // Verifying if the user has given the permissions
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            Log.d("Permission", "Permissions were not asked");
+            Log.d("LocationPermission", "Permissions were not asked");
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                     MY_PERMISSION_REQUEST_ACCESS_FINE_LOCATION);
         }
-        Log.d("Permission", "Permissions are granted");
+        Log.d("LocationPermission", "Permissions are granted");
 
-        //Retrieve last current position, in case current position is not working
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        // Retrieve last current position, in case current position is not working
         fusedLocationClient.getLastLocation().addOnSuccessListener(this, this);
 
         locationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(LocationResult locationResult) {
                 if (locationResult == null) {
-                    //Current position is not working, setting camera on last location
-                    Log.d("Location update", "Setting last position, no new locations received");
+                    // Current position is not working, setting camera on last location
+                    Log.d("LocationUpdate", "Setting last position, no new locations received");
                     CameraPosition position = new CameraPosition.Builder()
-                            .target(new LatLng(45.283828,09.105340))
+                            .target(new LatLng(45.283828, 09.105340))
                             .zoom(16)
                             .tilt(60)
                             .build();
-                    Log.d("Camera Position", "Map setted on last location");
+                    Log.d("CameraPosition", "Map setted on last location");
                     mapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(position));
                     return;
                 }
                 for (Location l : locationResult.getLocations()) {
-                    Log.d("Location update", "New location received" + l.toString());
+                    Log.d("LocationUpdate", "New location received" + l.toString());
                     lastLocationUpdate = l;
                 }
             }
@@ -145,9 +144,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mapView = findViewById(R.id.mapView);
         mapView.onCreate(savedInstanceState);
         mapView.getMapAsync(this);
-
         setPointsInformation();
-
 
         final Button user_button = findViewById(R.id.user_button);
         user_button.setOnClickListener(new View.OnClickListener() {
@@ -205,6 +202,24 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
+    // Method used to request user permission
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permission, int[] grantResults) {
+        switch (requestCode) {
+            // Switch could be avoided since we have just a permission request
+            case MY_PERMISSION_REQUEST_ACCESS_FINE_LOCATION: {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Log.d("LocationRequest", "Now the permission is granted");
+                } else {
+                    Log.d("LocationRequest", "Permission is not granted");
+                    // TODO: Close the application or show a message, dialog fragment
+                }
+                return;
+            }
+        }
+    }
+
     @Override
     public void onMapReady(@NonNull MapboxMap MBMap) {
         mapboxMap = MBMap;
@@ -252,25 +267,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         locationComponent.setLocationComponentEnabled(true);
         locationComponent.setCameraMode(CameraMode.TRACKING_GPS_NORTH);
         locationComponent.setRenderMode(RenderMode.COMPASS);
-    }
-
-    // Method used to request user permission
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permission, int[] grantResults) {
-        switch (requestCode) {
-            // Switch could be avoided since we have just a permission request
-            case MY_PERMISSION_REQUEST_ACCESS_FINE_LOCATION: {
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    Log.d("Location Request", "Now the permission is granted");
-                    // Does nothing and returns to the onCreate method
-                } else {
-                    Log.d("Location Request", "Permission is not granted");
-                    // TO DO: Close the application or show a message, dialog fragment
-                }
-                return;
-            }
-        }
     }
 
     @Override
@@ -329,17 +325,18 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mapView.onSaveInstanceState(outState);
     }
 
+    // Method to set last known location when location is not available
 
     @Override
     public void onSuccess(Location location) {
         if (location != null) {
-            Log.d("Last Location", "Last known location" + location.toString());
-            this.lastKnownLocation = location;
+            Log.d("LastLocation", "Last known location" + location.toString());
+            lastKnownLocation = location;
         } else {
-            Log.d("Last Location", "Last known location not available (Duomo di Milano)");
-            this.lastKnownLocation = new Location("");
-            this.lastKnownLocation.setLatitude(45.464211);
-            this.lastKnownLocation.setLongitude(9.191383);
+            Log.d("LastLocation", "Last known location not available (Duomo di Milano)");
+            lastKnownLocation = new Location("");
+            lastKnownLocation.setLongitude(9.191383);
+            lastKnownLocation.setLatitude(45.464211);
         }
     }
 
