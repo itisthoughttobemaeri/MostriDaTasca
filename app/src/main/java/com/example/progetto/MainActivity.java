@@ -7,40 +7,30 @@ import androidx.collection.LongSparseArray;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
-
 import android.Manifest;
-
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-
 import android.graphics.Canvas;
 import android.graphics.Color;
-
-
 import android.graphics.drawable.VectorDrawable;
-
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.print.PrintAttributes;
 import android.util.Log;
 import android.view.Gravity;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 import com.android.volley.Request;
-import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -48,7 +38,6 @@ import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.gson.Gson;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
@@ -68,11 +57,9 @@ import com.mapbox.mapboxsdk.plugins.annotation.OnSymbolClickListener;
 import com.mapbox.mapboxsdk.plugins.annotation.Symbol;
 import com.mapbox.mapboxsdk.plugins.annotation.SymbolManager;
 import com.mapbox.mapboxsdk.plugins.annotation.SymbolOptions;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -94,16 +81,16 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private Location lastLocationUpdate;
     private Location lastKnownLocation;
 
-    private SharedPreferences.Editor editor;
-    private LocationComponent locationComponent;
-
     private SymbolManager symbolManager;
     private Style mapStyle;
+
+    private Bundle savedInstanceState;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        savedInstanceState = this.savedInstanceState;
         Mapbox.getInstance(this, "pk.eyJ1Ijoidml0YWxlZWMiLCJhIjoiY2szNzBpZmxxMDZ3cjNoamxtemlkY3hoaCJ9.a_b71-bIkpNdQklD3mTKFw");
         setContentView(R.layout.activity_main);
 
@@ -113,11 +100,16 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                     MY_PERMISSION_REQUEST_ACCESS_FINE_LOCATION);
         }
-        Log.d("LocationPermission", "Permissions are granted");
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         // Retrieve last current position, in case current position is not working
         fusedLocationClient.getLastLocation().addOnSuccessListener(this, this);
+        Log.d("LocationLastKnown", "OnSuccess method called");
+
+        mapView = findViewById(R.id.mapView);
+        mapView.onCreate(savedInstanceState);
+        mapView.getMapAsync(this);
+        setPointsInformation();
 
         locationCallback = new LocationCallback() {
             @Override
@@ -126,7 +118,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     // Current position is not working, setting camera on last location
                     Log.d("LocationUpdate", "Setting last position, no new locations received");
                     CameraPosition position = new CameraPosition.Builder()
-                            .target(new LatLng(45.283828, 09.105340))
+                            .target(new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude()))
                             .zoom(16)
                             .tilt(60)
                             .build();
@@ -141,10 +133,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         };
 
-        mapView = findViewById(R.id.mapView);
-        mapView.onCreate(savedInstanceState);
-        mapView.getMapAsync(this);
-        setPointsInformation();
 
         final Button user_button = findViewById(R.id.user_button);
         user_button.setOnClickListener(new View.OnClickListener() {
@@ -211,9 +199,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             case MY_PERMISSION_REQUEST_ACCESS_FINE_LOCATION: {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     Log.d("LocationRequest", "Now the permission is granted");
+                    //TODO problemi di async
                 } else {
                     Log.d("LocationRequest", "Permission is not granted");
-                    // TODO: Close the application or show a message, dialog fragment
+                    PositionDialog positionDialog = new PositionDialog();
+                    positionDialog.show(getSupportFragmentManager(), "dialog");
                 }
                 return;
             }
@@ -223,13 +213,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onMapReady(@NonNull MapboxMap MBMap) {
         mapboxMap = MBMap;
-        CameraPosition currentPosition = new CameraPosition.Builder()
-                .target(new LatLng(lastKnownLocation.getLatitude(),lastKnownLocation.getLongitude()))
-                .zoom(16)
-                .tilt(60)
-                .build();
-        Log.d("MapReady", "Map is ready and setted on current location");
-        mapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(currentPosition));
         mapboxMap.setStyle(Style.LIGHT, this);
     }
 
@@ -238,6 +221,24 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mapStyle = style;
         // Map is set up and the style has loaded. Now you can add data or make other map adjustments.
         Log.d("StyleLoaded", "Style adjustments with UiSettings done");
+
+        if (lastKnownLocation != null) {
+            CameraPosition currentPosition = new CameraPosition.Builder()
+                    .target(new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude()))
+                    .zoom(16)
+                    .tilt(60)
+                    .build();
+            Log.d("MapReady", "Map is ready and setted on current location");
+            mapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(currentPosition));
+        } else {
+            CameraPosition currentPosition = new CameraPosition.Builder()
+                    .target(new LatLng(45.464211, 9.191383))
+                    .zoom(16)
+                    .tilt(60)
+                    .build();
+            Log.d("MapReady", "Map is ready and setted on current location");
+            mapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(currentPosition));
+        }
         enableLocationComponent(style);
         UiSettings uiSettings = mapboxMap.getUiSettings();
         uiSettings.setAllGesturesEnabled(true);
@@ -329,6 +330,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onSuccess(Location location) {
+        lastKnownLocation = location;
         if (location != null) {
             Log.d("LastLocation", "Last known location" + location.toString());
             lastKnownLocation = location;
