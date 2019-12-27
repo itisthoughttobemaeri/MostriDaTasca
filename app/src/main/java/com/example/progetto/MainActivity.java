@@ -72,19 +72,20 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private static final int MY_PERMISSION_REQUEST_ACCESS_FINE_LOCATION = 1;
 
     private LocationCallback locationCallback;
-    private boolean requestingLocationUpdates = true;
+    private boolean requestingLocationUpdates = false;
 
     // Variable used for current location
 
     private FusedLocationProviderClient fusedLocationClient;
 
-    private Location lastLocationUpdate;
+    public Location lastLocationUpdate;
     private Location lastKnownLocation;
 
     private SymbolManager symbolManager;
     private Style mapStyle;
 
     private Bundle savedInstanceState;
+
 
 
     @Override
@@ -94,22 +95,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         Mapbox.getInstance(this, "pk.eyJ1Ijoidml0YWxlZWMiLCJhIjoiY2szNzBpZmxxMDZ3cjNoamxtemlkY3hoaCJ9.a_b71-bIkpNdQklD3mTKFw");
         setContentView(R.layout.activity_main);
 
-        // Verifying if the user has given the permissions
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            Log.d("LocationPermission", "Permissions were not asked");
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    MY_PERMISSION_REQUEST_ACCESS_FINE_LOCATION);
-        }
-
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-        // Retrieve last current position, in case current position is not working
-        fusedLocationClient.getLastLocation().addOnSuccessListener(this, this);
-        Log.d("LocationLastKnown", "OnSuccess method called");
-
-        mapView = findViewById(R.id.mapView);
-        mapView.onCreate(savedInstanceState);
-        mapView.getMapAsync(this);
-        setPointsInformation();
 
         locationCallback = new LocationCallback() {
             @Override
@@ -133,6 +119,23 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         };
 
+        // Verifying if the user has given the permissions
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            Log.d("LocationPermission", "Permissions were not asked");
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    MY_PERMISSION_REQUEST_ACCESS_FINE_LOCATION);
+
+        } else {
+            requestingLocationUpdates = true;
+            // Retrieve last current position, in case current position is not working
+            fusedLocationClient.getLastLocation().addOnSuccessListener(this, this);
+            Log.d("LocationLastKnown", "OnSuccess method called");
+        }
+
+        mapView = findViewById(R.id.mapView);
+        mapView.onCreate(savedInstanceState);
+        mapView.getMapAsync(this);
+        setPointsInformation();
 
         final Button user_button = findViewById(R.id.user_button);
         user_button.setOnClickListener(new View.OnClickListener() {
@@ -187,7 +190,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }
             }
         });
-
     }
 
     // Method used to request user permission
@@ -199,7 +201,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             case MY_PERMISSION_REQUEST_ACCESS_FINE_LOCATION: {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     Log.d("LocationRequest", "Now the permission is granted");
-                    //TODO problemi di async
+                    // Retrieve last current position, in case current position is not working
+                    fusedLocationClient.getLastLocation().addOnSuccessListener(this, this);
+                    Log.d("LocationLastKnown", "OnSuccess method called");
+                    requestingLocationUpdates = true;
                 } else {
                     Log.d("LocationRequest", "Permission is not granted");
                     PositionDialog positionDialog = new PositionDialog();
@@ -360,7 +365,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             frameLayout.removeAllViews();
             fragmentTransaction.replace(R.id.layout, fragment).addToBackStack(null).commit();
             Log.d("Fragment", "Fragment added full");
-
     }
 
     // Method found on the internet to create a bitmap (since resource decoder returns null)
@@ -578,5 +582,4 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         };
         handler.post(runnable);
     }
-
 }
