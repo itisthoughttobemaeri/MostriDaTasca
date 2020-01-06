@@ -14,6 +14,7 @@ import androidx.fragment.app.FragmentTransaction;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.VectorDrawable;
@@ -21,11 +22,13 @@ import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Base64;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.TextView;
 import com.android.volley.Request;
 import com.android.volley.Response;
@@ -135,7 +138,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mapView = findViewById(R.id.mapView);
         mapView.onCreate(savedInstanceState);
         mapView.getMapAsync(this);
-        setPointsInformation();
+        setInformation();
 
         final Button user_button = findViewById(R.id.user_button);
         user_button.setOnClickListener(new View.OnClickListener() {
@@ -407,11 +410,21 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-    private void setPointsInformation() {
+    private void setInformation() {
         TextView textView_xp = findViewById(R.id.xp_points);
         TextView textView_lp = findViewById(R.id.lp_points);
         textView_lp.setText(Model.getInstance().getLP() + "");
         textView_xp.setText(Model.getInstance().getXP() + "");
+        ImageView imageView = findViewById(R.id.user_map_image);
+
+        if (Model.getInstance().getImage().equals("null"))
+            imageView.setImageResource(R.drawable.ic_student);
+        else {
+            byte[] byteArray = Base64.decode(Model.getInstance().getImage(), Base64.DEFAULT);
+            Bitmap decodedImage = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
+            imageView.setImageBitmap(decodedImage);
+        }
+
     }
 
     private void addImagesToStyle(Style style) {

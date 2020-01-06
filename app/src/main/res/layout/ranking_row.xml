@@ -20,12 +20,12 @@
 
         <TextView
             android:id="@+id/number"
-            android:layout_width="wrap_content"
+            android:layout_width="45dp"
             android:layout_height="69dp"
-            android:layout_marginLeft="20dp"
+            android:layout_marginLeft="10dp"
             android:background="#00971313"
             android:fontFamily="@font/akajufont"
-            android:gravity="center"
+            android:gravity="center_vertical"
             android:paddingRight="10dp"
             android:text="1°"
             android:textColor="#000000"
@@ -38,9 +38,9 @@
             android:src="@drawable/ic_emoji_events_24px" />
 
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="150dp"
             android:layout_height="63dp"
-            android:layout_marginRight="16dp"
+            android:layout_marginRight="10dp"
             android:orientation="vertical">
 
             <TextView
@@ -79,9 +79,19 @@
                     android:text="xp points"
                     android:textColor="#000000"
                     android:textSize="18sp" />
+
             </LinearLayout>
 
         </LinearLayout>
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/user_rank_image"
+            android:layout_width="57dp"
+            android:layout_height="57dp"
+            android:layout_gravity="center"
+            app:civ_border_color="#FF262626"
+            app:civ_border_width="2dp"
+            app:civ_circle_background_color="#FFFFFF" />
 
     </LinearLayout>
 

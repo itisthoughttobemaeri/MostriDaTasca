@@ -5,7 +5,7 @@ public class User {
     private String id;
     private int lp;
     private int xp;
-    private String image;
+    private String img;
 
     // Class used for rankings
 
@@ -22,7 +22,7 @@ public class User {
     }
 
     public String getImage() {
-        return image;
+        return img;
     }
 
     public String getId() {
