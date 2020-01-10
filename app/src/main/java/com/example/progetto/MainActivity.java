@@ -42,6 +42,13 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import com.mapbox.android.core.location.LocationEngine;
+import com.mapbox.android.core.location.LocationEngineCallback;
+import com.mapbox.android.core.location.LocationEngineProvider;
+import com.mapbox.android.core.location.LocationEngineRequest;
+import com.mapbox.android.core.location.LocationEngineResult;
+import com.mapbox.android.core.permissions.PermissionsListener;
+import com.mapbox.android.core.permissions.PermissionsManager;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
@@ -63,78 +70,53 @@ import com.mapbox.mapboxsdk.plugins.annotation.SymbolOptions;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
 
-public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, Style.OnStyleLoaded, OnSuccessListener<Location> {
+public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, Style.OnStyleLoaded, PermissionsListener {
     private MapView mapView;
     private MapboxMap mapboxMap;
 
     // Constant used to identify the number of the permission asked
     private static final int MY_PERMISSION_REQUEST_ACCESS_FINE_LOCATION = 1;
 
-    private LocationCallback locationCallback;
+    //private LocationCallback locationCallback;
     private boolean requestingLocationUpdates = false;
 
     // Variable used for current location
 
-    private FusedLocationProviderClient fusedLocationClient;
+    //private FusedLocationProviderClient fusedLocationClient;
 
-    public Location lastLocationUpdate;
-    private Location lastKnownLocation;
+    public Location location;
 
     private SymbolManager symbolManager;
     private Style mapStyle;
+    private PermissionsManager permissionsManager;
+    private LocationEngine locationEngine;
+    private LocationListeningCallback locationListeningCallback;
+    long DEFAULT_INTERVAL_IN_MILLISECONDS = 1000L;
+    long DEFAULT_MAX_WAIT_TIME = DEFAULT_INTERVAL_IN_MILLISECONDS * 5;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         Mapbox.getInstance(this, "pk.eyJ1Ijoidml0YWxlZWMiLCJhIjoiY2szNzBpZmxxMDZ3cjNoamxtemlkY3hoaCJ9.a_b71-bIkpNdQklD3mTKFw");
         setContentView(R.layout.activity_main);
-
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-
-        locationCallback = new LocationCallback() {
-            @Override
-            public void onLocationResult(LocationResult locationResult) {
-                if (locationResult == null) {
-                    // Current position is not working, setting camera on last location
-                    Log.d("LocationUpdate", "Setting last position, no new locations received");
-                    CameraPosition position = new CameraPosition.Builder()
-                            .target(new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude()))
-                            .zoom(16)
-                            .tilt(60)
-                            .build();
-                    Log.d("CameraPosition", "Map setted on last location");
-                    mapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(position));
-                    return;
-                }
-                for (Location l : locationResult.getLocations()) {
-                    Log.d("LocationUpdate", "New location received" + l.toString());
-                    lastLocationUpdate = l;
-                }
-            }
-        };
-
-        // Verifying if the user has given the permissions
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            Log.d("LocationPermission", "Permissions were not asked");
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    MY_PERMISSION_REQUEST_ACCESS_FINE_LOCATION);
-
-        } else {
-            requestingLocationUpdates = true;
-            // Retrieve last current position, in case current position is not working
-            fusedLocationClient.getLastLocation().addOnSuccessListener(this, this);
-            Log.d("LocationLastKnown", "OnSuccess method called");
-        }
-
         mapView = findViewById(R.id.mapView);
         mapView.onCreate(savedInstanceState);
         mapView.getMapAsync(this);
         setInformation();
+
+        // With the PermissionsManager class, you can check whether the user has granted location permission
+        permissionsManager = new PermissionsManager(this);
+        locationEngine = LocationEngineProvider.getBestLocationEngine(this);
+        locationListeningCallback = new LocationListeningCallback(this);
+
 
         final ImageView user_button = findViewById(R.id.user_map_image);
         user_button.setOnClickListener(new View.OnClickListener() {
@@ -189,27 +171,49 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
     }
 
-    // Method used to request user permission
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        permissionsManager.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permission, int[] grantResults) {
-        switch (requestCode) {
-            // Switch could be avoided since we have just a permission request
-            case MY_PERMISSION_REQUEST_ACCESS_FINE_LOCATION: {
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    Log.d("LocationRequest", "Now the permission is granted");
-                    // Retrieve last current position, in case current position is not working
-                    fusedLocationClient.getLastLocation().addOnSuccessListener(this, this);
-                    Log.d("LocationLastKnown", "OnSuccess method called");
-                    requestingLocationUpdates = true;
-                    enableLocationComponent(mapStyle);
-                } else {
-                    Log.d("LocationRequest", "Permission is not granted");
-                    PositionDialog positionDialog = new PositionDialog();
-                    positionDialog.show(getSupportFragmentManager(), "dialog");
-                }
-                return;
-            }
+    public void onExplanationNeeded(List<String> permissionsToExplain) {
+        //TODO
+    }
+
+    @Override
+    public void onPermissionResult(boolean granted) {
+        if (granted) {
+            Log.d("Location", "Permission is granted");
+            // Permission sensitive logic called here, such as activating the Maps SDK's LocationComponent to show the device's location
+            enableLocationComponent(mapStyle);
+        } else {
+            Log.d("Location", "Permission is denied");
+            PositionDialog positionDialog = new PositionDialog();
+            positionDialog.show(getSupportFragmentManager(), "dialog");
+        }
+    }
+
+
+    // Class used every time there's a change in the position
+
+    public class LocationListeningCallback implements LocationEngineCallback<LocationEngineResult> {
+
+        private final WeakReference<MainActivity> activityWeakReference;
+        private MainActivity mainActivity;
+        LocationListeningCallback(MainActivity activity) {
+            this.activityWeakReference = new WeakReference<>(activity);
+            mainActivity = activity;
+        }
+        @Override
+        public void onSuccess(LocationEngineResult result) {
+            // The LocationEngineCallback interface's method which fires when the device's location has changed.
+            mainActivity.location = result.getLastLocation();
+        }
+        @Override
+        public void onFailure(@NonNull Exception exception) {
+            // The LocationEngineCallback interface's method which fires when the device's location can not be captured
+            //TODO
         }
     }
 
@@ -217,6 +221,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onMapReady(@NonNull MapboxMap MBMap) {
         mapboxMap = MBMap;
         mapboxMap.setStyle(Style.LIGHT, this);
+
+        CameraPosition currentPosition = new CameraPosition.Builder()
+                .target(new LatLng(45.464211, 9.191383))
+                .zoom(16)
+                .tilt(60)
+                .build();
+        Log.d("MapReady", "Map is ready and setted on Milan location");
+        mapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(currentPosition));
     }
 
     @Override
@@ -225,24 +237,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         // Map is set up and the style has loaded. Now you can add data or make other map adjustments.
         Log.d("StyleLoaded", "Style adjustments with UiSettings done");
 
-        if (lastKnownLocation != null) {
-            CameraPosition currentPosition = new CameraPosition.Builder()
-                    .target(new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude()))
-                    .zoom(16)
-                    .tilt(60)
-                    .build();
-            Log.d("MapReady", "Map is ready and setted on current location");
-            mapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(currentPosition));
-        } else {
-            CameraPosition currentPosition = new CameraPosition.Builder()
-                    .target(new LatLng(45.464211, 9.191383))
-                    .zoom(16)
-                    .tilt(60)
-                    .build();
-            Log.d("MapReady", "Map is ready and setted on current location");
-            mapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(currentPosition));
-        }
-        enableLocationComponent(style);
         UiSettings uiSettings = mapboxMap.getUiSettings();
         uiSettings.setAllGesturesEnabled(true);
         uiSettings.setCompassEnabled(false);
@@ -251,13 +245,28 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         addImagesToStyle(style);
         addObjectsToMap(style);
 
+        if (PermissionsManager.areLocationPermissionsGranted(this)) {
+            Log.d("Location", "Permission was granted");
+            enableLocationComponent(mapStyle);
+        } else {
+            Log.d("Location", "Asking for permission");
+            permissionsManager = new PermissionsManager(this);
+            permissionsManager.requestLocationPermissions(this);
+        }
+
         // Method to update markers
         callApi();
     }
 
     private void enableLocationComponent(Style style) {
+        LocationEngineRequest request = new LocationEngineRequest.Builder(DEFAULT_INTERVAL_IN_MILLISECONDS)
+                .setPriority(LocationEngineRequest.PRIORITY_NO_POWER)
+                .setMaxWaitTime(DEFAULT_MAX_WAIT_TIME)
+                .build();
+        locationEngine.requestLocationUpdates(request, locationListeningCallback, getMainLooper());
+        locationEngine.getLastLocation(locationListeningCallback);
         LocationComponent locationComponent = mapboxMap.getLocationComponent();
-        // Location component options are used to style the user location
+
         LocationComponentOptions locationComponentOptions = LocationComponentOptions.builder(getApplicationContext())
                 .bearingTintColor(Color.red(5))
                 .build();
@@ -284,31 +293,26 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onResume();
         mapView.onResume();
         if (requestingLocationUpdates) {
-            startLocationUpdates();
+
         }
-    }
-
-    // Method to receive location updates
-
-    private void startLocationUpdates() {
-        LocationRequest locationRequest = LocationRequest.create();
-        locationRequest.setInterval(1000);
-        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
     }
 
     @Override
     public void onPause() {
         super.onPause();
         mapView.onPause();
-        fusedLocationClient.removeLocationUpdates(locationCallback);
-        requestingLocationUpdates = false;
+        if (locationEngine != null) {
+            locationEngine.removeLocationUpdates(locationListeningCallback);
+        }
     }
 
     @Override
     public void onStop() {
         super.onStop();
         mapView.onStop();
+        if (locationEngine != null) {
+            locationEngine.removeLocationUpdates(locationListeningCallback);
+        }
     }
 
     @Override
@@ -321,6 +325,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     protected void onDestroy() {
         super.onDestroy();
         mapView.onDestroy();
+        if (locationEngine != null) {
+            locationEngine.removeLocationUpdates(locationListeningCallback);
+        }
     }
 
     @Override
@@ -329,37 +336,21 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mapView.onSaveInstanceState(outState);
     }
 
-    // Method to set last known location when location is not available
-
-    @Override
-    public void onSuccess(Location location) {
-        lastKnownLocation = location;
-        if (location != null) {
-            Log.d("LastLocation", "Last known location" + location.toString());
-            lastKnownLocation = location;
-        } else {
-            Log.d("LastLocation", "Last known location not available (Duomo di Milano)");
-            lastKnownLocation = new Location("");
-            lastKnownLocation.setLongitude(9.191383);
-            lastKnownLocation.setLatitude(45.464211);
-        }
-    }
-
     public void onClickCenter(View view) {
         Log.d("Center", "Center method called");
         CameraPosition position = new CameraPosition.Builder()
-            .target(new LatLng(lastLocationUpdate.getLatitude(), lastLocationUpdate.getLongitude()))
+            .target(new LatLng(location.getLatitude(), location.getLongitude()))
             .zoom(16)
             .tilt(60)
             .build();
         mapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(position));
-        Log.d("Center", "Centered on user");
+        Log.d("Center", "Camera centered on user");
     }
 
     public void addFragment(Fragment fragment) {
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-            FrameLayout frameLayout = (FrameLayout) findViewById(R.id.layout);
+            FrameLayout frameLayout = findViewById(R.id.layout);
             frameLayout.removeAllViews();
             fragmentTransaction.replace(R.id.layout, fragment).addToBackStack(null).commit();
             Log.d("Fragment", "Fragment added full");
@@ -472,21 +463,21 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             if ("CA".equals(mapObjects[i].getType())) {
                 switch (mapObjects[i].getSize()) {
                     case "L" :
-                        Symbol symbol = symbolManager.create(new SymbolOptions()
+                        symbolManager.create(new SymbolOptions()
                                 .withLatLng(new LatLng(mapObjects[i].getLat(), mapObjects[i].getLon()))
                                 .withIconImage("candy")
                                 .withData(element)
                         );
                         break;
                     case "M" :
-                        Symbol symbol1 = symbolManager.create(new SymbolOptions()
+                        symbolManager.create(new SymbolOptions()
                                 .withLatLng(new LatLng(mapObjects[i].getLat(), mapObjects[i].getLon()))
                                 .withIconImage("candy3")
                                 .withData(element)
                         );
                         break;
                     case "S" :
-                        Symbol symbol2 = symbolManager.create(new SymbolOptions()
+                        symbolManager.create(new SymbolOptions()
                                 .withLatLng(new LatLng(mapObjects[i].getLat(), mapObjects[i].getLon()))
                                 .withIconImage("candy2")
                                 .withData(element)
@@ -497,21 +488,21 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             else {
                 switch (mapObjects[i].getSize()) {
                     case "L":
-                        Symbol symbol = symbolManager.create(new SymbolOptions()
+                        symbolManager.create(new SymbolOptions()
                                 .withLatLng(new LatLng(mapObjects[i].getLat(), mapObjects[i].getLon()))
                                 .withIconImage("dragon")
                                 .withData(element)
                         );
                         break;
                     case "M":
-                        Symbol symbol1 = symbolManager.create(new SymbolOptions()
+                        symbolManager.create(new SymbolOptions()
                                 .withLatLng(new LatLng(mapObjects[i].getLat(), mapObjects[i].getLon()))
                                 .withIconImage("dragonfly")
                                 .withData(element)
                         );
                         break;
                     case "S":
-                        Symbol symbol2 = symbolManager.create(new SymbolOptions()
+                        symbolManager.create(new SymbolOptions()
                                 .withLatLng(new LatLng(mapObjects[i].getLat(), mapObjects[i].getLon()))
                                 .withIconImage("octopus")
                                 .withData(element)
