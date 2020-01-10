@@ -161,6 +161,11 @@ public class MapObjectFragment extends Fragment {
                             yes.setVisibility(yes.GONE);
                         }
 
+                        if (element.getType().equals("CA") && Model.getInstance().getLP() == 100) {
+                            fight.setText("You have enough life points!");
+                            no.setVisibility(no.VISIBLE);
+                            yes.setVisibility(yes.GONE);
+                        }
 
                     }
                 },

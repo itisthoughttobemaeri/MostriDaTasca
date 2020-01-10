@@ -9,6 +9,8 @@ import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
+import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -34,11 +36,11 @@ public class SplashScreen extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.splash_screen);
 
-        SharedPreferences sharedPreferences = getSharedPreferences("Shared Preferences", 0);
+        SharedPreferences sharedPreferences = getSharedPreferences("SharedPreferences", 0);
         editor = sharedPreferences.edit();
         //editor.remove("session_id");
         editor.commit();
-        Log.d("If", Boolean.toString(!sharedPreferences.contains("session_id")));
+        Log.d("SessionID", "Session id is in the shared preferences: " + sharedPreferences.contains("session_id"));
 
         myThread = new Thread() {
             @Override
@@ -110,7 +112,7 @@ public class SplashScreen extends AppCompatActivity {
     private void doSetProfile(String string) {
         // Json object must be session id
         String url = "https://ewserver.di.unimi.it/mobicomp/mostri/setprofile.php";
-        String json = "{'session_id':" + string + ", 'username': 'player', 'image':'null'}";
+        String json = "{'session_id':" + string + ", 'username': 'player', 'img':'null'}";
 
         try {
             Model.getInstance().setId(new JSONObject("{session_id:" + string + "}"));
@@ -188,7 +190,7 @@ public class SplashScreen extends AppCompatActivity {
         );
 
         Model.getInstance().getRequestQueue(getApplicationContext()).add(JSONRequest_data_download);
-        Log.d("VolleyQueue", "Second request added");
+        Log.d("VolleyQueue", "Map request added");
     }
 
     // Method used to call the request to save user points
@@ -211,6 +213,7 @@ public class SplashScreen extends AppCompatActivity {
                         Model.getInstance().setLP(Integer.parseInt(response.getString("lp")));
                         Model.getInstance().setXP(Integer.parseInt(response.getString("xp")));
                         Model.getInstance().setUsername(response.getString("username"));
+                        Log.d("SessionID", "Username from server: " + response.getString("username"));
                         Model.getInstance().setImage(response.getString("img"));
                     } catch (JSONException e) {
                         e.printStackTrace();

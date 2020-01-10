@@ -1,6 +1,8 @@
 package com.example.progetto;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.ImageDecoder;
@@ -19,6 +21,8 @@ import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.android.volley.Request;
@@ -84,7 +88,7 @@ public class UserFragment extends Fragment {
                   Log.d("ButtonEdit", "Edit button clicked");
                   TextView tv = getActivity().findViewById(R.id.user_name);
                   final String username = tv.getText().toString();
-
+                  Log.d("ButtonEdit", "Username new is:" + username);
                   // Getting the id to build the string to POST
                   String id = null;
                   try {
@@ -92,7 +96,7 @@ public class UserFragment extends Fragment {
                   } catch (JSONException e) {
                       e.printStackTrace();
                   }
-                  String json = "{'session_id':" + id + ", 'username':" + username + "', 'image':'" + Model.getInstance().getImage() + "'}";
+                  String json = "{'session_id':" + id + ", 'username':'" + username + "', 'img':'" + Model.getInstance().getImage() + "'}";
 
                   // Building json object
                   JSONObject jsonObject = null;
@@ -123,15 +127,13 @@ public class UserFragment extends Fragment {
                               @Override
                               public void onErrorResponse(VolleyError error) {
                                   error.printStackTrace();
-                                  // The image was too big
-                                  Toast.makeText(getActivity().getApplicationContext(), "The image is too big! Couldn't change the image", Toast.LENGTH_LONG).show();
-                                  Model.getInstance().setImage("null");
-                                  onClick(view);
+                                  //Model.getInstance().setImage("null");
+                                  //onClick(view);
                               }
                           }
                   );
                   Model.getInstance().getRequestQueue(getActivity().getApplicationContext()).add(JSONRequest_user_edit);
-                  Log.d("VolleyQueue", "Set profile request added");
+                  Log.d("VolleyQueue", "Edit profile request added");
               }
         });
 
@@ -140,10 +142,26 @@ public class UserFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 // Picking the image from camera
-                Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI);
-                startActivityForResult(intent, 0);
+                if (ContextCompat.checkSelfPermission(getActivity().getApplicationContext(), Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                    Log.d("Gallery", "Permissions were not asked");
+                    ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 10);
+                } else {
+                    Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI);
+                    startActivityForResult(intent, 0);
+                }
             }
         });
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permission, int[] grantResults) {
+        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI);
+            startActivityForResult(intent, 0);
+        } else {
+            Log.d("Gallery", "Permission is not granted");
+        }
+        return;
     }
 
     @Override

@@ -11,8 +11,8 @@
         android:id="@+id/linearLayout5"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginStart="110dp"
-        android:layout_marginEnd="110dp"
+        android:layout_marginStart="70dp"
+        android:layout_marginEnd="70dp"
         android:background="@drawable/ic_background"
         android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -22,10 +22,10 @@
 
         <ImageView
             android:id="@+id/resultImage"
-            android:layout_width="249dp"
-            android:layout_height="249dp"
+            android:layout_width="300dp"
+            android:layout_height="300dp"
             android:layout_gravity="center"
-            android:layout_marginTop="85dp"
+            android:layout_marginTop="160dp"
             android:padding="7dp"
             tools:srcCompat="@tools:sample/avatars" />
 
@@ -34,23 +34,25 @@
             android:layout_width="match_parent"
             android:layout_height="85dp"
             android:layout_marginHorizontal="60dp"
+            android:layout_marginTop="30dp"
             android:fontFamily="@font/akajufont"
             android:gravity="center"
             android:text="win/lost/died"
             android:textColor="#000000"
-            android:textSize="36sp"
+            android:textSize="40sp"
             android:textStyle="bold" />
 
         <TextView
             android:id="@+id/pointsGained"
             android:layout_width="match_parent"
-            android:layout_height="55dp"
-            android:layout_marginHorizontal="60dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="140dp"
+            android:layout_marginTop="30dp"
             android:fontFamily="@font/akajufont"
             android:gravity="center"
             android:text="points gained"
             android:textColor="#000000"
-            android:textSize="24sp"
+            android:textSize="36sp"
             android:textStyle="bold"
             android:visibility="visible" />
 
@@ -59,7 +61,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_marginHorizontal="80dp"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="50dp"
             android:layout_marginBottom="30dp"
             android:gravity="center"
             android:orientation="horizontal">

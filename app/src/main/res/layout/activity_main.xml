@@ -31,7 +31,8 @@
             android:layout_gravity="bottom|left"
             android:layout_marginLeft="16dp"
             android:layout_marginBottom="16dp"
-            android:background="@drawable/ic_add" />
+            android:background="@drawable/ic_add"
+            android:visibility="visible" />
 
         <Button
             android:id="@+id/ranking_button"
@@ -39,7 +40,7 @@
             android:layout_height="57dp"
             android:layout_gravity="bottom|left"
             android:layout_marginLeft="16dp"
-            android:layout_marginBottom="235dp"
+            android:layout_marginBottom="162dp"
             android:background="@drawable/ic_ranking"
             android:visibility="gone" />
 
@@ -52,16 +53,6 @@
             android:layout_marginBottom="89dp"
             android:background="@drawable/ic_qm"
             android:gravity="bottom|left"
-            android:visibility="gone" />
-
-        <Button
-            android:id="@+id/user_button"
-            android:layout_width="57dp"
-            android:layout_height="57dp"
-            android:layout_gravity="bottom|left"
-            android:layout_marginLeft="16dp"
-            android:layout_marginBottom="162dp"
-            android:background="@drawable/ic_user"
             android:visibility="gone" />
 
         <com.mapbox.mapboxsdk.maps.MapView
@@ -122,6 +113,7 @@
             android:layout_gravity="right"
             android:layout_marginTop="16dp"
             android:layout_marginRight="16dp"
+            android:visibility="visible"
             app:civ_border_color="#FF262626"
             app:civ_border_width="2dp"
             app:civ_circle_background_color="#FFFFFF" />

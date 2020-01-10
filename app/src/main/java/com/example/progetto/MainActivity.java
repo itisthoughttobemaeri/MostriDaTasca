@@ -87,14 +87,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private SymbolManager symbolManager;
     private Style mapStyle;
 
-    private Bundle savedInstanceState;
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        savedInstanceState = this.savedInstanceState;
         Mapbox.getInstance(this, "pk.eyJ1Ijoidml0YWxlZWMiLCJhIjoiY2szNzBpZmxxMDZ3cjNoamxtemlkY3hoaCJ9.a_b71-bIkpNdQklD3mTKFw");
         setContentView(R.layout.activity_main);
 
@@ -140,7 +136,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mapView.getMapAsync(this);
         setInformation();
 
-        final Button user_button = findViewById(R.id.user_button);
+        final ImageView user_button = findViewById(R.id.user_map_image);
         user_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -179,15 +175,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onClick(View v) {
                 Log.d("FabMenu", "Clicked");
-                if (user_button.getVisibility() == View.GONE) {
+                if (ranking_button.getVisibility() == View.GONE) {
                     fab.setBackground(getDrawable(R.drawable.ic_button));
-                    user_button.setVisibility(View.VISIBLE);
                     ranking_button.setVisibility(View.VISIBLE);
                     question_button.setVisibility(View.VISIBLE);
                 }
                 else {
                     fab.setBackground(getDrawable(R.drawable.ic_add));
-                    user_button.setVisibility(View.GONE);
                     ranking_button.setVisibility(View.GONE);
                     question_button.setVisibility(View.GONE);
                 }
@@ -208,6 +202,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     fusedLocationClient.getLastLocation().addOnSuccessListener(this, this);
                     Log.d("LocationLastKnown", "OnSuccess method called");
                     requestingLocationUpdates = true;
+                    enableLocationComponent(mapStyle);
                 } else {
                     Log.d("LocationRequest", "Permission is not granted");
                     PositionDialog positionDialog = new PositionDialog();
@@ -250,9 +245,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         enableLocationComponent(style);
         UiSettings uiSettings = mapboxMap.getUiSettings();
         uiSettings.setAllGesturesEnabled(true);
-        uiSettings.setCompassEnabled(true);
-        uiSettings.setAttributionGravity(Gravity.CENTER|Gravity.BOTTOM);
-        uiSettings.setLogoGravity(Gravity.CENTER|Gravity.BOTTOM);
+        uiSettings.setCompassEnabled(false);
+        uiSettings.setLogoEnabled(false);
+        uiSettings.setAttributionEnabled(false);
         addImagesToStyle(style);
         addObjectsToMap(style);
 
@@ -264,7 +259,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         LocationComponent locationComponent = mapboxMap.getLocationComponent();
         // Location component options are used to style the user location
         LocationComponentOptions locationComponentOptions = LocationComponentOptions.builder(getApplicationContext())
-                .bearingTintColor(Color.blue(5))
+                .bearingTintColor(Color.red(5))
                 .build();
 
         LocationComponentActivationOptions locationComponentActivationOptions = LocationComponentActivationOptions
@@ -353,10 +348,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onClickCenter(View view) {
         Log.d("Center", "Center method called");
         CameraPosition position = new CameraPosition.Builder()
-                .target(new LatLng(lastLocationUpdate.getLatitude(), lastLocationUpdate.getLongitude()))
-                .zoom(16)
-                .tilt(60)
-                .build();
+            .target(new LatLng(lastLocationUpdate.getLatitude(), lastLocationUpdate.getLongitude()))
+            .zoom(16)
+            .tilt(60)
+            .build();
         mapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(position));
         Log.d("Center", "Centered on user");
     }
@@ -383,8 +378,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     public boolean isDistanceObjectOk(int id) {
         ShownObject c = Model.getInstance().getShownObjectById(id);
-        double distance = distance(lastLocationUpdate.getLatitude(), lastLocationUpdate.getLongitude(), c.getLat(), c.getLon(), "K" );
-        //double distance = 0.03;
+        //double distance = distance(lastLocationUpdate.getLatitude(), lastLocationUpdate.getLongitude(), c.getLat(), c.getLon(), "K" );
+        double distance = 0.03;
         if (distance <= 0.05) {
             return true;
         }

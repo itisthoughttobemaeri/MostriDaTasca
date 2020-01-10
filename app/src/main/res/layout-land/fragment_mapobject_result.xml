@@ -130,7 +130,7 @@
                 android:layout_width="88dp"
                 android:layout_height="88dp"
                 android:layout_gravity="center"
-                android:layout_marginLeft="100dp"
+                android:layout_marginLeft="60dp"
                 android:background="@android:color/transparent"
                 android:backgroundTint="#FFFFFF"
                 android:backgroundTintMode="multiply"

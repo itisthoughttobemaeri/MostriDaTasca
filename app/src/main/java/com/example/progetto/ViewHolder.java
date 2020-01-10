@@ -38,9 +38,9 @@ public class ViewHolder extends RecyclerView.ViewHolder{
         if (user.getUsername() == null || user.getUsername().equals("")) {
             name.setText("player");
         }
-        else
+        else {
             name.setText(user.getUsername());
-
+        }
         Log.d("UserXP", user.getXP() + "");
         points.setText(user.getXP() + "");
         if (rank == 1) {
@@ -61,7 +61,10 @@ public class ViewHolder extends RecyclerView.ViewHolder{
         else {
             byte[] byteArray = Base64.decode(user.getImage(), Base64.DEFAULT);
             Bitmap decodedImage = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
-            imageView.setImageBitmap(decodedImage);
+            if (decodedImage == null) {
+                imageView.setImageResource(R.drawable.ic_student);
+            } else
+                imageView.setImageBitmap(decodedImage);
         }
     }
 }

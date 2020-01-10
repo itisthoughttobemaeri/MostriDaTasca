@@ -9,10 +9,10 @@
 
     <Button
         android:id="@+id/change_image"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
-        android:layout_marginStart="735dp"
-        android:layout_marginBottom="510dp"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_marginStart="590dp"
+        android:layout_marginBottom="790dp"
         android:background="@drawable/ic_add"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
@@ -21,8 +21,8 @@
         android:id="@+id/linearLayout2"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginStart="110dp"
-        android:layout_marginEnd="110dp"
+        android:layout_marginStart="70dp"
+        android:layout_marginEnd="70dp"
         android:background="@drawable/ic_background"
         android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -32,10 +32,10 @@
 
         <de.hdodenhof.circleimageview.CircleImageView
             android:id="@+id/user_image"
-            android:layout_width="253dp"
-            android:layout_height="253dp"
+            android:layout_width="350dp"
+            android:layout_height="350dp"
             android:layout_gravity="center"
-            android:layout_marginTop="100dp"
+            android:layout_marginTop="160dp"
             app:civ_border_color="#FF262626"
             app:civ_border_width="5dp" />
 
@@ -44,14 +44,14 @@
             android:layout_width="193dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="40dp"
             android:ems="10"
             android:fontFamily="@font/akajufont"
             android:gravity="center"
             android:inputType="textPersonName"
             android:text="name"
             android:textColor="#000000"
-            android:textSize="48sp"
+            android:textSize="58sp"
             android:textStyle="bold" />
 
         <LinearLayout
@@ -59,7 +59,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_marginHorizontal="80dp"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="60dp"
             android:gravity="center|fill_horizontal"
             android:orientation="horizontal">
 
@@ -114,7 +114,7 @@
             android:layout_width="150dp"
             android:layout_height="150dp"
             android:layout_gravity="center"
-            android:layout_marginTop="30dp"
+            android:layout_marginTop="50dp"
             android:background="@android:color/transparent"
             android:foreground="@drawable/ic_confirm"
             android:onClick="onClickEdit"

@@ -38,7 +38,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="175dp"
-            android:layout_marginTop="30dp"
+            android:layout_marginTop="10dp"
             android:fontFamily="@font/akajufont"
             android:gravity="center"
             android:text="the game"
@@ -55,14 +55,14 @@
             android:text="You are a monster hunter. When you're less than 50m from a monster, you can fight it. By fighting a monster, you can lose LPs. If you die, you lose all your XPs and you come back with 100 LPs. Otherwise, you earn XPs depending on the size of the monster. When you are less than 50m from a candy you can pick it up and earn LPs depending on the size of the candy."
             android:textAlignment="center"
             android:textColor="#5A5A5A"
-            android:textSize="27sp" />
+            android:textSize="24sp" />
 
         <TextView
             android:id="@+id/title3"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="175dp"
-            android:layout_marginTop="35dp"
+            android:layout_marginTop="10dp"
             android:fontFamily="@font/akajufont"
             android:gravity="center"
             android:text="credits"
@@ -141,11 +141,11 @@
 
         <ImageView
             android:id="@+id/imageView4"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="246dp"
+            android:layout_height="110dp"
             android:layout_gravity="center"
             android:layout_marginHorizontal="75dp"
-            android:layout_marginTop="40dp"
+            android:layout_marginTop="20dp"
             app:srcCompat="@drawable/credits" />
 
     </LinearLayout>

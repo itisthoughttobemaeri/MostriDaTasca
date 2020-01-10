@@ -110,13 +110,13 @@ public class ResultFragment extends Fragment {
                             if (Model.getInstance().getLP()<LP_points) {
                                 // The user picked up a candy
                                 image.setImageResource(R.drawable.ic_donation);
-                                result.setText("You picked up the candy!");
+                                result.setText("You chose a good one!");
                                 pointsGained.setText( "You gained " + (LP_points - Model.getInstance().getLP()) + "LP, so now you have:");
 
                             } else if (Model.getInstance().getXP()<XP_points) {
                                 // The user won against the monster
                                 image.setImageResource(R.drawable.ic_win);
-                                result.setText("You won the battle!");
+                                result.setText("You are invincible!");
                                 pointsGained.setText( "You gained " + (XP_points - Model.getInstance().getXP()) + "XP and you lost " +(Model.getInstance().getLP() - LP_points) + "LP, so now you have:");
 
                             } else if (Model.getInstance().getLP()==LP_points || Model.getInstance().getXP()==XP_points) {
