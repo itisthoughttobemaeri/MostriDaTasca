@@ -2,6 +2,7 @@ package com.example.progetto;
 
 import androidx.annotation.NonNull;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.collection.LongSparseArray;
 
@@ -19,6 +20,10 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.VectorDrawable;
 import android.location.Location;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkInfo;
+import android.net.NetworkRequest;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -80,12 +85,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private MapView mapView;
     private MapboxMap mapboxMap;
 
-    // Constant used to identify the number of the permission asked
-    private static final int MY_PERMISSION_REQUEST_ACCESS_FINE_LOCATION = 1;
-
-    //private LocationCallback locationCallback;
-    private boolean requestingLocationUpdates = false;
-
     // Variable used for current location
 
     //private FusedLocationProviderClient fusedLocationClient;
@@ -97,8 +96,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private PermissionsManager permissionsManager;
     private LocationEngine locationEngine;
     private LocationListeningCallback locationListeningCallback;
-    long DEFAULT_INTERVAL_IN_MILLISECONDS = 1000L;
-    long DEFAULT_MAX_WAIT_TIME = DEFAULT_INTERVAL_IN_MILLISECONDS * 5;
+    private final long DEFAULT_INTERVAL_IN_MILLISECONDS = 1000L;
+    private final long DEFAULT_MAX_WAIT_TIME = DEFAULT_INTERVAL_IN_MILLISECONDS * 5;
+    private final long MAP_REFRESH_TIME_IN_MILLISECONDS = 10000;
+
+    private Handler handler = new Handler();
+    private Runnable runnable;
+    private ConnectivityManager connectivityManager;
+    private ConnectivityManager.NetworkCallback networkCallback;
 
 
     @Override
@@ -116,6 +121,30 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         permissionsManager = new PermissionsManager(this);
         locationEngine = LocationEngineProvider.getBestLocationEngine(this);
         locationListeningCallback = new LocationListeningCallback(this);
+
+        // Checking Internet status
+        connectivityManager = (ConnectivityManager)this.getSystemService(this.CONNECTIVITY_SERVICE);
+        networkCallback = new ConnectivityManager.NetworkCallback() {
+            private InternetDialog internetDialog;
+
+            @Override
+            public void onAvailable(@NonNull Network network) {
+                // Internet is available, do nothing
+                Log.d("Internet", "Available");
+                if (internetDialog != null)
+                    internetDialog.dismiss();
+            }
+
+            @Override
+            public void onLost(@NonNull Network network) {
+                super.onLost(network);
+                Log.d("Internet", "Lost");
+                internetDialog = new InternetDialog();
+                internetDialog.show(getSupportFragmentManager(), "dialog");
+            }
+        };
+
+        connectivityManager.registerDefaultNetworkCallback(networkCallback);
 
 
         final ImageView user_button = findViewById(R.id.user_map_image);
@@ -178,7 +207,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onExplanationNeeded(List<String> permissionsToExplain) {
-        //TODO
     }
 
     @Override
@@ -213,7 +241,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         @Override
         public void onFailure(@NonNull Exception exception) {
             // The LocationEngineCallback interface's method which fires when the device's location can not be captured
-            //TODO
         }
     }
 
@@ -292,9 +319,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onResume() {
         super.onResume();
         mapView.onResume();
-        if (requestingLocationUpdates) {
-
-        }
+        Log.d("Runnable", "Restarting updates");
+        handler.post(runnable);
+        // Location Engine restarts automatically
     }
 
     @Override
@@ -304,6 +331,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (locationEngine != null) {
             locationEngine.removeLocationUpdates(locationListeningCallback);
         }
+        if (handler != null) {
+            Log.d("Runnable", "Removing updates");
+            handler.removeCallbacks(runnable);
+        }
+
     }
 
     @Override
@@ -312,6 +344,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mapView.onStop();
         if (locationEngine != null) {
             locationEngine.removeLocationUpdates(locationListeningCallback);
+        }
+        if (handler != null) {
+            handler.removeCallbacks(runnable);
         }
     }
 
@@ -327,6 +362,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mapView.onDestroy();
         if (locationEngine != null) {
             locationEngine.removeLocationUpdates(locationListeningCallback);
+        }
+        if (handler != null) {
+            handler.removeCallbacks(runnable);
         }
     }
 
@@ -350,10 +388,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void addFragment(Fragment fragment) {
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-            FrameLayout frameLayout = findViewById(R.id.layout);
-            frameLayout.removeAllViews();
-            fragmentTransaction.replace(R.id.layout, fragment).addToBackStack(null).commit();
-            Log.d("Fragment", "Fragment added full");
+        FrameLayout frameLayout = findViewById(R.id.layout);
+        frameLayout.removeAllViews();
+        fragmentTransaction.replace(R.id.layout, fragment).addToBackStack(null).commit();
+        Log.d("Fragment", "Fragment added full");
     }
 
     // Method found on the internet to create a bitmap (since resource decoder returns null)
@@ -524,11 +562,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private void callApi() {
         final String url = "https://ewserver.di.unimi.it/mobicomp/mostri/getmap.php";
-        final Handler handler = new Handler();
-        final Runnable runnable = new Runnable() {
+        runnable = new Runnable() {
             @Override
             public void run() {
-                Log.d("Running", "Running every x millisec");
+                Log.d("Runnable", "Running every 10 seconds");
                 JsonObjectRequest JSONRequest_data_update = new JsonObjectRequest(
                         Request.Method.POST,
                         url,
@@ -536,7 +573,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         new Response.Listener<JSONObject>() {
                             @Override
                             public void onResponse(JSONObject response) {
-                                Log.d("VolleyJson", "Server is refreshing");
+                                Log.d("VolleyJson", "Server is refreshing map objects");
                                 // Handle JSON data
                                 try {
                                     Gson gson = new Gson();
@@ -545,7 +582,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                                     // JSON data converted into array
 
                                     ShownObject[] shownObjects = gson.fromJson(mapObjects.toString(), ShownObject[].class);
-                                    Log.d("VolleyJson", "This is the first object from the server (refreshing)" + shownObjects[0].toString());
+                                    Log.d("VolleyJson", "[UPDATE ]This is the first object from the server" + shownObjects[0].toString());
                                     Model.getInstance().refreshShownObjects(shownObjects);
 
                                     // Deleting all the symbols
@@ -576,7 +613,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         }
                 );
                 Model.getInstance().getRequestQueue(getApplicationContext()).add(JSONRequest_data_update);
-                handler.postDelayed(this, 10000);
+                handler.postDelayed(this, MAP_REFRESH_TIME_IN_MILLISECONDS);
             }
         };
         handler.post(runnable);

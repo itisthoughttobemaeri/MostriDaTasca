@@ -39,7 +39,7 @@ import static android.app.Activity.RESULT_OK;
 
 
 public class UserFragment extends Fragment {
-    ImageView imageView;
+    private ImageView imageView;
 
     @Override
     public View onCreateView(LayoutInflater layoutInflater, ViewGroup container, Bundle bundle) {

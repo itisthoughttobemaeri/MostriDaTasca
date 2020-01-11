@@ -6,14 +6,20 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.ConnectivityManager;
+import android.net.Network;
 import android.os.Bundle;
+import android.os.PersistableBundle;
 import android.util.Base64;
 import android.util.Log;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.DialogFragment;
 
 import com.android.volley.Request;
 import com.android.volley.Response;
@@ -30,13 +36,20 @@ import java.io.ByteArrayOutputStream;
 public class SplashScreen extends AppCompatActivity {
     private SharedPreferences.Editor editor;
     private Thread myThread;
+    private ConnectivityManager connectivityManager;
+    private ConnectivityManager.NetworkCallback networkCallback;
+    private InternetDialog internetDialog;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.splash_screen);
 
-        SharedPreferences sharedPreferences = getSharedPreferences("SharedPreferences", 0);
+        // Checking Internet status
+        connectivityManager = (ConnectivityManager)this.getSystemService(this.CONNECTIVITY_SERVICE);
+        Network network = connectivityManager.getActiveNetwork();
+
+        final SharedPreferences sharedPreferences = getSharedPreferences("SharedPreferences", 0);
         editor = sharedPreferences.edit();
         //editor.remove("session_id");
         editor.commit();
@@ -57,54 +70,119 @@ public class SplashScreen extends AppCompatActivity {
             }
         };
 
+        if (network == null) {
+            internetDialog = new InternetDialog();
+            internetDialog.show(getSupportFragmentManager(), "dialog");
+        } else {
+            // The if statement is verifying the 1st execution of the app
 
-        // The if statement is verifying the 1st execution of the app
+            if (!sharedPreferences.contains("session_id")) {
+                // First execution
+                String url = "https://ewserver.di.unimi.it/mobicomp/mostri/register.php";
 
-        if (!sharedPreferences.contains("session_id")) {
-            // First execution
-            String url = "https://ewserver.di.unimi.it/mobicomp/mostri/register.php";
-
-            JsonObjectRequest JSONRequest_user_setup = new JsonObjectRequest(
-                    Request.Method.GET,
-                    url,
-                    null,
-                    new Response.Listener<JSONObject>() {
-                        @Override
-                        public void onResponse(JSONObject response) {
-                            Log.d("VolleyJson", "Server is working");
-                            // Handle JSON data
-                            try {
-                                String s = (String) response.get("session_id");
-                                Model.getInstance().setId(response);
-                                Log.d("VolleyJson", s);
-                                editor.putString("session_id", (String) response.get("session_id"));
-                                editor.commit();
-                                doSetProfile(response.getString("session_id"));
-                            } catch (JSONException e) {
-                                e.printStackTrace();
+                JsonObjectRequest JSONRequest_user_setup = new JsonObjectRequest(
+                        Request.Method.GET,
+                        url,
+                        null,
+                        new Response.Listener<JSONObject>() {
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                Log.d("VolleyJson", "Server is working");
+                                // Handle JSON data
+                                try {
+                                    String s = (String) response.get("session_id");
+                                    Model.getInstance().setId(response);
+                                    Log.d("VolleyJson", s);
+                                    editor.putString("session_id", (String) response.get("session_id"));
+                                    editor.commit();
+                                    doSetProfile(response.getString("session_id"));
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                error.printStackTrace();
                             }
                         }
-                    },
-                    new Response.ErrorListener() {
-                        @Override
-                        public void onErrorResponse(VolleyError error) {
-                            error.printStackTrace();
-                        }
-                    }
-            );
-            Model.getInstance().getRequestQueue(getApplicationContext()).add(JSONRequest_user_setup);
-            Log.d("VolleyQueue", "First request added");
-        }
-        else {
-            Log.d("VolleyJson", "Already setted shared preferences");
-            String session_id = sharedPreferences.getString("session_id", null);
-            try {
-                Model.getInstance().setId(new JSONObject("{session_id:" + session_id + "}"));
-            } catch (JSONException e) {
-                e.printStackTrace();
+                );
+                Model.getInstance().getRequestQueue(getApplicationContext()).add(JSONRequest_user_setup);
+                Log.d("VolleyQueue", "First request added");
             }
-            doGetUserRequest(Model.getInstance().getId());
+            else {
+                Log.d("VolleyJson", "Already setted shared preferences");
+                String session_id = sharedPreferences.getString("session_id", null);
+                try {
+                    Model.getInstance().setId(new JSONObject("{session_id:" + session_id + "}"));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                doGetUserRequest(Model.getInstance().getId());
+            }
         }
+
+        networkCallback = new ConnectivityManager.NetworkCallback() {
+            @Override
+            public void onAvailable(@NonNull Network network) {
+                // Internet is available, do nothing
+                Log.d("Internet", "Available");
+                if (internetDialog != null) {
+                    internetDialog.dismiss();
+                    // Doing the same thing on the else statement
+
+                    // The if statement is verifying the 1st execution of the app
+
+                    if (!sharedPreferences.contains("session_id")) {
+                        // First execution
+                        String url = "https://ewserver.di.unimi.it/mobicomp/mostri/register.php";
+
+                        JsonObjectRequest JSONRequest_user_setup = new JsonObjectRequest(
+                                Request.Method.GET,
+                                url,
+                                null,
+                                new Response.Listener<JSONObject>() {
+                                    @Override
+                                    public void onResponse(JSONObject response) {
+                                        Log.d("VolleyJson", "Server is working");
+                                        // Handle JSON data
+                                        try {
+                                            String s = (String) response.get("session_id");
+                                            Model.getInstance().setId(response);
+                                            Log.d("VolleyJson", s);
+                                            editor.putString("session_id", (String) response.get("session_id"));
+                                            editor.commit();
+                                            doSetProfile(response.getString("session_id"));
+                                        } catch (JSONException e) {
+                                            e.printStackTrace();
+                                        }
+                                    }
+                                },
+                                new Response.ErrorListener() {
+                                    @Override
+                                    public void onErrorResponse(VolleyError error) {
+                                        error.printStackTrace();
+                                    }
+                                }
+                        );
+                        Model.getInstance().getRequestQueue(getApplicationContext()).add(JSONRequest_user_setup);
+                        Log.d("VolleyQueue", "First request added");
+                    }
+                    else {
+                        Log.d("VolleyJson", "Already setted shared preferences");
+                        String session_id = sharedPreferences.getString("session_id", null);
+                        try {
+                            Model.getInstance().setId(new JSONObject("{session_id:" + session_id + "}"));
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        doGetUserRequest(Model.getInstance().getId());
+                    }
+                }
+            }
+        };
+        connectivityManager.registerDefaultNetworkCallback(networkCallback);
     }
 
     // Method used to call the request to initialize the username
@@ -167,6 +245,7 @@ public class SplashScreen extends AppCompatActivity {
                         Log.d("VolleyJson", "Server is working");
                         // Handle JSON data
                         try {
+                            //connectivityManager.unregisterNetworkCallback(networkCallback);
                             Gson gson = new Gson();
                             JSONArray mapObjects = response.getJSONArray("mapobjects");
                             // JSON data converted into array
@@ -184,7 +263,6 @@ public class SplashScreen extends AppCompatActivity {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         error.printStackTrace();
-                        // TO DO: handle error 401 & 400
                     }
                 }
         );
