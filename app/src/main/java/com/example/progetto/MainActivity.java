@@ -441,7 +441,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         textView_xp.setText(Model.getInstance().getXP() + "");
         ImageView imageView = findViewById(R.id.user_map_image);
 
-        if (Model.getInstance().getImage().equals("null"))
+        if (Model.getInstance().getImage() == null || Model.getInstance().getImage().equals("null"))
             imageView.setImageResource(R.drawable.ic_student);
         else {
             byte[] byteArray = Base64.decode(Model.getInstance().getImage(), Base64.DEFAULT);
@@ -495,7 +495,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         Gson gson = new Gson();
 
         // Creating symbols
-        for (int i = 0; i<mapObjects.length; i++) {
+        if (mapObjects != null)
+            for (int i = 0; i<mapObjects.length; i++) {
             // Adding id data as json element to each symbol
             JsonObject element = gson.fromJson("{'id': " + mapObjects[i].getId() + "}", JsonObject.class);
             if ("CA".equals(mapObjects[i].getType())) {
@@ -608,7 +609,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             @Override
                             public void onErrorResponse(VolleyError error) {
                                 error.printStackTrace();
-                                // TO DO: handle error 401 & 400
+                                new InternetDialog().show(getSupportFragmentManager(), "dialog");
                             }
                         }
                 );

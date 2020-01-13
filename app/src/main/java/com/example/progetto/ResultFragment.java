@@ -145,7 +145,7 @@ public class ResultFragment extends Fragment {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         error.printStackTrace();
-                        // TO DO: handle error 401 & 400
+                        new InternetDialog().show(getActivity().getSupportFragmentManager(), "dialog");
                     }
                 }
         );

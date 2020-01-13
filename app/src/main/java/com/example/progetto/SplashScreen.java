@@ -60,7 +60,6 @@ public class SplashScreen extends AppCompatActivity {
             public void run() {
                 try {
                     sleep(3000);
-
                     Intent intent = new Intent(getApplicationContext(), MainActivity.class);
                     startActivity(intent);
                     finish();
@@ -70,119 +69,59 @@ public class SplashScreen extends AppCompatActivity {
             }
         };
 
-        if (network == null) {
-            internetDialog = new InternetDialog();
-            internetDialog.show(getSupportFragmentManager(), "dialog");
-        } else {
-            // The if statement is verifying the 1st execution of the app
 
-            if (!sharedPreferences.contains("session_id")) {
-                // First execution
-                String url = "https://ewserver.di.unimi.it/mobicomp/mostri/register.php";
+        // The if statement is verifying the 1st execution of the app
 
-                JsonObjectRequest JSONRequest_user_setup = new JsonObjectRequest(
-                        Request.Method.GET,
-                        url,
-                        null,
-                        new Response.Listener<JSONObject>() {
-                            @Override
-                            public void onResponse(JSONObject response) {
-                                Log.d("VolleyJson", "Server is working");
-                                // Handle JSON data
-                                try {
-                                    String s = (String) response.get("session_id");
-                                    Model.getInstance().setId(response);
-                                    Log.d("VolleyJson", s);
-                                    editor.putString("session_id", (String) response.get("session_id"));
-                                    editor.commit();
-                                    doSetProfile(response.getString("session_id"));
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
-                                }
-                            }
-                        },
-                        new Response.ErrorListener() {
-                            @Override
-                            public void onErrorResponse(VolleyError error) {
-                                error.printStackTrace();
+        if (!sharedPreferences.contains("session_id")) {
+            // First execution
+            String url = "https://ewserver.di.unimi.it/mobicomp/mostri/register.php";
+
+            JsonObjectRequest JSONRequest_user_setup = new JsonObjectRequest(
+                    Request.Method.GET,
+                    url,
+                    null,
+                    new Response.Listener<JSONObject>() {
+                        @Override
+                        public void onResponse(JSONObject response) {
+                            Log.d("VolleyJson", "Server is working");
+                            // Handle JSON data
+                            try {
+                                String s = (String) response.get("session_id");
+                                Model.getInstance().setId(response);
+                                Log.d("VolleyJson", s);
+                                editor.putString("session_id", (String) response.get("session_id"));
+                                editor.commit();
+                                doSetProfile(response.getString("session_id"));
+                            } catch (JSONException e) {
+                                e.printStackTrace();
                             }
                         }
-                );
-                Model.getInstance().getRequestQueue(getApplicationContext()).add(JSONRequest_user_setup);
-                Log.d("VolleyQueue", "First request added");
-            }
-            else {
-                Log.d("VolleyJson", "Already setted shared preferences");
-                String session_id = sharedPreferences.getString("session_id", null);
-                try {
-                    Model.getInstance().setId(new JSONObject("{session_id:" + session_id + "}"));
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                doGetUserRequest(Model.getInstance().getId());
-            }
+                    },
+                    new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            new InternetDialog().show(getSupportFragmentManager(), "dialog");
+                            error.printStackTrace();
+                            Log.d("Internet", "Should call next: myThread");
+                            myThread.start();
+                        }
+                    }
+            );
+            Model.getInstance().getRequestQueue(getApplicationContext()).add(JSONRequest_user_setup);
+            Log.d("VolleyQueue", "First request added");
         }
-
-        networkCallback = new ConnectivityManager.NetworkCallback() {
-            @Override
-            public void onAvailable(@NonNull Network network) {
-                // Internet is available, do nothing
-                Log.d("Internet", "Available");
-                if (internetDialog != null) {
-                    internetDialog.dismiss();
-                    // Doing the same thing on the else statement
-
-                    // The if statement is verifying the 1st execution of the app
-
-                    if (!sharedPreferences.contains("session_id")) {
-                        // First execution
-                        String url = "https://ewserver.di.unimi.it/mobicomp/mostri/register.php";
-
-                        JsonObjectRequest JSONRequest_user_setup = new JsonObjectRequest(
-                                Request.Method.GET,
-                                url,
-                                null,
-                                new Response.Listener<JSONObject>() {
-                                    @Override
-                                    public void onResponse(JSONObject response) {
-                                        Log.d("VolleyJson", "Server is working");
-                                        // Handle JSON data
-                                        try {
-                                            String s = (String) response.get("session_id");
-                                            Model.getInstance().setId(response);
-                                            Log.d("VolleyJson", s);
-                                            editor.putString("session_id", (String) response.get("session_id"));
-                                            editor.commit();
-                                            doSetProfile(response.getString("session_id"));
-                                        } catch (JSONException e) {
-                                            e.printStackTrace();
-                                        }
-                                    }
-                                },
-                                new Response.ErrorListener() {
-                                    @Override
-                                    public void onErrorResponse(VolleyError error) {
-                                        error.printStackTrace();
-                                    }
-                                }
-                        );
-                        Model.getInstance().getRequestQueue(getApplicationContext()).add(JSONRequest_user_setup);
-                        Log.d("VolleyQueue", "First request added");
-                    }
-                    else {
-                        Log.d("VolleyJson", "Already setted shared preferences");
-                        String session_id = sharedPreferences.getString("session_id", null);
-                        try {
-                            Model.getInstance().setId(new JSONObject("{session_id:" + session_id + "}"));
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                        doGetUserRequest(Model.getInstance().getId());
-                    }
-                }
+        else {
+            Log.d("VolleyJson", "Already setted shared preferences");
+            String session_id = sharedPreferences.getString("session_id", null);
+            try {
+                Model.getInstance().setId(new JSONObject("{session_id:" + session_id + "}"));
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
-        };
-        connectivityManager.registerDefaultNetworkCallback(networkCallback);
+            Log.d("Internet", "Should call next: myThread");
+            myThread.start();
+            doGetUserRequest(Model.getInstance().getId());
+        }
     }
 
     // Method used to call the request to initialize the username
@@ -220,7 +159,7 @@ public class SplashScreen extends AppCompatActivity {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         error.printStackTrace();
-                        // TO DO: handle error 401 & 400
+                        new InternetDialog().show(getSupportFragmentManager(), "dialog");
                     }
                 }
         );
@@ -262,6 +201,7 @@ public class SplashScreen extends AppCompatActivity {
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
+                        new InternetDialog().show(getSupportFragmentManager(), "dialog");
                         error.printStackTrace();
                     }
                 }
@@ -303,7 +243,7 @@ public class SplashScreen extends AppCompatActivity {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         error.printStackTrace();
-                        // TODO: handle error 401 & 400
+                        new InternetDialog().show(getSupportFragmentManager(), "dialog");
                     }
                 }
         );

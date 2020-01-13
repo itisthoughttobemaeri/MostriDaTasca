@@ -23,6 +23,8 @@ import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import com.android.volley.Request;
 import com.android.volley.Response;
@@ -58,15 +60,15 @@ public class UserFragment extends Fragment {
         textView_lp.setText(Model.getInstance().getLP() + "");
         textView_xp.setText(Model.getInstance().getXP() + "");
 
-        Log.d("ImageConversion", Model.getInstance().getImage());
-
-        if (Model.getInstance().getImage().equals("null"))
+        if (Model.getInstance().getImage() == null || Model.getInstance().getImage().equals("null"))
             imageView.setImageResource(R.drawable.ic_student);
         else {
+            Log.d("ImageConversion", Model.getInstance().getImage());
             byte[] byteArray = Base64.decode(Model.getInstance().getImage(), Base64.DEFAULT);
             Bitmap decodedImage = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
             imageView.setImageBitmap(decodedImage);
         }
+
 
         OnBackPressedCallback callback = new OnBackPressedCallback(true /* enabled by default */) {
             @Override
@@ -80,60 +82,59 @@ public class UserFragment extends Fragment {
         requireActivity().getOnBackPressedDispatcher().addCallback(this, callback);
 
         Button button = getActivity().findViewById(R.id.edit);
-        button.setOnClickListener(new View.OnClickListener(){
-              @Override
-              public void onClick(View v) {
-                  // Start request to set information on the server
-                  Log.d("ButtonEdit", "Edit button clicked");
-                  TextView tv = getActivity().findViewById(R.id.user_name);
-                  final String username = tv.getText().toString();
-                  Log.d("ButtonEdit", "Username new is:" + username);
-                  // Getting the id to build the string to POST
-                  String id = null;
-                  try {
-                      id = Model.getInstance().getId().getString("session_id");
-                  } catch (JSONException e) {
-                      e.printStackTrace();
-                  }
-                  String json = "{'session_id':" + id + ", 'username':'" + username + "', 'img':'" + Model.getInstance().getImage() + "'}";
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Start request to set information on the server
+                Log.d("ButtonEdit", "Edit button clicked");
+                TextView tv = getActivity().findViewById(R.id.user_name);
+                final String username = tv.getText().toString();
+                Log.d("ButtonEdit", "Username new is:" + username);
+                // Getting the id to build the string to POST
+                String id = null;
+                try {
+                    id = Model.getInstance().getId().getString("session_id");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                String json = "{'session_id':" + id + ", 'username':'" + username + "', 'img':'" + Model.getInstance().getImage() + "'}";
 
-                  // Building json object
-                  JSONObject jsonObject = null;
-                  try {
-                      jsonObject = new JSONObject(json);
-                  } catch (JSONException e) {
-                      e.printStackTrace();
-                  }
+                // Building json object
+                JSONObject jsonObject = null;
+                try {
+                    jsonObject = new JSONObject(json);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
 
-                  String url = "https://ewserver.di.unimi.it/mobicomp/mostri/setprofile.php";
+                String url = "https://ewserver.di.unimi.it/mobicomp/mostri/setprofile.php";
 
-                  JsonObjectRequest JSONRequest_user_edit = new JsonObjectRequest(
-                          Request.Method.POST,
-                          url,
-                          jsonObject,
-                          new Response.Listener<JSONObject>() {
-                              @Override
-                              public void onResponse(JSONObject response) {
-                                  Log.d("VolleyJson", "Server is working");
-                                  Model.getInstance().setUsername(username);
-                                  // Image saved in the Model onActivityResult (where there are controls)
-                                  Log.d("ButtonEdit", "New username " + username);
-                                  Intent intent = new Intent(getActivity().getApplicationContext(), MainActivity.class);
-                                  startActivity(intent);
-                              }
-                          },
-                          new Response.ErrorListener() {
-                              @Override
-                              public void onErrorResponse(VolleyError error) {
-                                  error.printStackTrace();
-                                  //Model.getInstance().setImage("null");
-                                  //onClick(view);
-                              }
-                          }
-                  );
-                  Model.getInstance().getRequestQueue(getActivity().getApplicationContext()).add(JSONRequest_user_edit);
-                  Log.d("VolleyQueue", "Edit profile request added");
-              }
+                JsonObjectRequest JSONRequest_user_edit = new JsonObjectRequest(
+                        Request.Method.POST,
+                        url,
+                        jsonObject,
+                        new Response.Listener<JSONObject>() {
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                Log.d("VolleyJson", "Server is working");
+                                Model.getInstance().setUsername(username);
+                                // Image saved in the Model onActivityResult (where there are controls)
+                                Log.d("ButtonEdit", "New username " + username);
+                                Intent intent = new Intent(getActivity().getApplicationContext(), MainActivity.class);
+                                startActivity(intent);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                error.printStackTrace();
+                                new InternetDialog().show(getActivity().getSupportFragmentManager(), "dialog");
+                            }
+                        }
+                );
+                Model.getInstance().getRequestQueue(getActivity().getApplicationContext()).add(JSONRequest_user_edit);
+                Log.d("VolleyQueue", "Edit profile request added");
+            }
         });
 
         Button button_image = getActivity().findViewById(R.id.change_image);
@@ -150,6 +151,7 @@ public class UserFragment extends Fragment {
                 }
             }
         });
+
     }
 
     @Override

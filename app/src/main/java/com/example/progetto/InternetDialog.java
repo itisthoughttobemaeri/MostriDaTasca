@@ -13,7 +13,7 @@ public class InternetDialog extends DialogFragment {
         // Use the Builder class for convenient dialog construction
         AlertDialog.Builder builder = new AlertDialog.Builder(new ContextThemeWrapper(getActivity(), R.style.AppTheme));
         builder.setTitle("Internet connection")
-                .setMessage("To play this game you must have an active Internet connection. Come back once you have one.");
+                .setMessage("The app couldn't download data from the server because there is no active internet connection");
         // Create the AlertDialog object and return it
         return builder.create();
     }
