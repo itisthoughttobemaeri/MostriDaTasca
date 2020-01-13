@@ -42,6 +42,9 @@ import static android.app.Activity.RESULT_OK;
 
 public class UserFragment extends Fragment {
     private ImageView imageView;
+    TextView textView_name;
+    TextView textView_lp;
+    TextView textView_xp;
 
     @Override
     public View onCreateView(LayoutInflater layoutInflater, ViewGroup container, Bundle bundle) {
@@ -52,10 +55,11 @@ public class UserFragment extends Fragment {
     public void onViewCreated(final View view, Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        TextView textView_name = getActivity().findViewById(R.id.user_name);
-        TextView textView_lp = getActivity().findViewById(R.id.user_lp_points);
-        TextView textView_xp = getActivity().findViewById(R.id.user_xp_points);
+        textView_name = getActivity().findViewById(R.id.user_name);
+        textView_lp = getActivity().findViewById(R.id.user_lp_points);
+        textView_xp = getActivity().findViewById(R.id.user_xp_points);
         imageView = getActivity().findViewById(R.id.user_image);
+
         textView_name.setText(Model.getInstance().getUsername());
         textView_lp.setText(Model.getInstance().getLP() + "");
         textView_xp.setText(Model.getInstance().getXP() + "");
@@ -69,25 +73,61 @@ public class UserFragment extends Fragment {
             imageView.setImageBitmap(decodedImage);
         }
 
+        String url = "https://ewserver.di.unimi.it/mobicomp/mostri/getprofile.php";
+        // This request was added to make sure a user offline got his data once back online
+        JsonObjectRequest JSONRequest_user_edit = new JsonObjectRequest(
+                Request.Method.POST,
+                url,
+                Model.getInstance().getId(),
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        try {
+                            String s = response.getString("username");
+                            Log.d("GetUser", response.toString());
+                            Model.getInstance().setLP(Integer.parseInt(response.getString("lp")));
+                            Model.getInstance().setXP(Integer.parseInt(response.getString("xp")));
+                            Model.getInstance().setUsername(response.getString("username"));
+                            Model.getInstance().setImage(response.getString("img"));
+
+                            textView_name.setText(Model.getInstance().getUsername());
+                            textView_lp.setText(Model.getInstance().getLP() + "");
+                            textView_xp.setText(Model.getInstance().getXP() + "");
+
+                            if (Model.getInstance().getImage() == null || Model.getInstance().getImage().equals("null"))
+                                imageView.setImageResource(R.drawable.ic_student);
+                            else {
+                                Log.d("ImageConversion", Model.getInstance().getImage());
+                                byte[] byteArray = Base64.decode(Model.getInstance().getImage(), Base64.DEFAULT);
+                                Bitmap decodedImage = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
+                                imageView.setImageBitmap(decodedImage);
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        error.printStackTrace();
+                        new InternetDialog().show(getActivity().getSupportFragmentManager(), "dialog");
+                    }
+                }
+        );
+        Model.getInstance().getRequestQueue(getActivity().getApplicationContext()).add(JSONRequest_user_edit);
+        Log.d("VolleyQueue", "Edit profile request added");
+
 
         OnBackPressedCallback callback = new OnBackPressedCallback(true /* enabled by default */) {
             @Override
             public void handleOnBackPressed() {
                 // Handle the back button event
                 Log.d("UserFragment", "Go back clicked");
-                Intent intent = new Intent(getActivity().getApplicationContext(), MainActivity.class);
-                startActivity(intent);
-            }
-        };
-        requireActivity().getOnBackPressedDispatcher().addCallback(this, callback);
 
-        Button button = getActivity().findViewById(R.id.edit);
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
                 // Start request to set information on the server
                 Log.d("ButtonEdit", "Edit button clicked");
-                TextView tv = getActivity().findViewById(R.id.user_name);
+                TextView tv = view.findViewById(R.id.user_name);
                 final String username = tv.getText().toString();
                 Log.d("ButtonEdit", "Username new is:" + username);
                 // Getting the id to build the string to POST
@@ -128,16 +168,18 @@ public class UserFragment extends Fragment {
                             @Override
                             public void onErrorResponse(VolleyError error) {
                                 error.printStackTrace();
-                                new InternetDialog().show(getActivity().getSupportFragmentManager(), "dialog");
+                                Intent intent = new Intent(getActivity().getApplicationContext(), MainActivity.class);
+                                startActivity(intent);
                             }
                         }
                 );
                 Model.getInstance().getRequestQueue(getActivity().getApplicationContext()).add(JSONRequest_user_edit);
                 Log.d("VolleyQueue", "Edit profile request added");
             }
-        });
+        };
+        requireActivity().getOnBackPressedDispatcher().addCallback(this, callback);
 
-        Button button_image = getActivity().findViewById(R.id.change_image);
+        Button button_image = view.findViewById(R.id.change_image);
         button_image.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

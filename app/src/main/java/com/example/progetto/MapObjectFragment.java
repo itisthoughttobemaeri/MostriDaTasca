@@ -40,7 +40,7 @@ public class MapObjectFragment extends Fragment {
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         String url = "https://ewserver.di.unimi.it/mobicomp/mostri/getimage.php";
@@ -60,6 +60,93 @@ public class MapObjectFragment extends Fragment {
             e.printStackTrace();
         }
 
+        Button yes = view.findViewById(R.id.confirm);
+        yes.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.d("ElementFragment", "Confirm clicked");
+                // Create new fragment
+                ResultFragment resultFragment = new ResultFragment(id);
+                ((MainActivity) getActivity()).addFragment(resultFragment);
+            }
+        });
+
+        Button no = getActivity().findViewById(R.id.deny);
+        no.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.d("ElementFragment", "Deny clicked");
+                // Go back to map
+                Intent intent = new Intent(getActivity().getApplicationContext(), MainActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        TextView points = getActivity().findViewById(R.id.user_lp_points);
+        TextView fight = getActivity().findViewById(R.id.fight);
+        TextView name = getActivity().findViewById(R.id.name);
+        TextView size = getActivity().findViewById(R.id.size);
+        ImageView image_points = getActivity().findViewById(R.id.points_object);
+
+        ShownObject element = Model.getInstance().getShownObjectById(id);
+        size.setText(element.getSize());
+        name.setText(element.getName());
+
+        // Setting information
+
+        if (element.getType().equals("MO")) {
+            if (element.getSize().equals("S")) {
+                image_points.setImageResource(R.drawable.favorite);
+                points.setText("1");
+            } else if (element.getSize().equals("M")) {
+                points.setText("3");
+                image_points.setImageResource(R.drawable.favorite);
+            }
+            else {
+                points.setText("10");
+                image_points.setImageResource(R.drawable.favorite);
+            }
+        } else {
+            if (element.getSize().equals("S")) {
+                points.setText("0-50");
+                image_points.setImageResource(R.drawable.heart2);
+            } else if (element.getSize().equals("M")) {
+                points.setText("25-75");
+                image_points.setImageResource(R.drawable.heart2);
+            }
+            else {
+                points.setText("50-100");
+                image_points.setImageResource(R.drawable.heart2);
+            }
+        }
+
+        if ( ((MainActivity) getActivity()).isDistanceObjectOk(id) ) {
+            if (element.getType().equals("MO")) {
+                fight.setText("Wanna fight this monster?");
+                yes.setVisibility(yes.VISIBLE);
+                no.setVisibility(no.VISIBLE);
+            } else {
+                fight.setText("Wanna grab this candy?");
+                yes.setVisibility(yes.VISIBLE);
+                no.setVisibility(no.VISIBLE);
+            }
+        }
+        else {
+            if (element.getType().equals("MO")) {
+                fight.setText("You are too far to fight this!");
+            } else {
+                fight.setText("You are too far to grab this!");
+            }
+            no.setVisibility(no.VISIBLE);
+            yes.setVisibility(yes.GONE);
+        }
+
+        if (element.getType().equals("CA") && Model.getInstance().getLP() == 100) {
+            fight.setText("You have enough life points!");
+            no.setVisibility(no.VISIBLE);
+            yes.setVisibility(yes.GONE);
+        }
+
         JsonObjectRequest JSONRequest_image_download = new JsonObjectRequest(
                 Request.Method.POST,
                 url,
@@ -69,37 +156,6 @@ public class MapObjectFragment extends Fragment {
                     public void onResponse(JSONObject response) {
                         Log.d("VolleyRequest", "Success");
                         ImageView image = getActivity().findViewById(R.id.image);
-                        TextView points = getActivity().findViewById(R.id.user_lp_points);
-                        TextView fight = getActivity().findViewById(R.id.fight);
-                        TextView name = getActivity().findViewById(R.id.name);
-                        TextView size = getActivity().findViewById(R.id.size);
-                        ImageView image_points = getActivity().findViewById(R.id.points_object);
-
-                        Button yes = getActivity().findViewById(R.id.confirm);
-                        yes.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                Log.d("ElementFragment", "Confirm clicked");
-                                // Create new fragment
-                                ResultFragment resultFragment = new ResultFragment(id);
-                                ((MainActivity) getActivity()).addFragment(resultFragment);
-                            }
-                        });
-
-                        Button no = getActivity().findViewById(R.id.deny);
-                        no.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                Log.d("ElementFragment", "Deny clicked");
-                                // Go back to map
-                                Intent intent = new Intent(getActivity().getApplicationContext(), MainActivity.class);
-                                startActivity(intent);
-                            }
-                        });
-
-                        ShownObject element = Model.getInstance().getShownObjectById(id);
-                        size.setText(element.getSize());
-                        name.setText(element.getName());
 
                         String encodedImage = null;
                         try {
@@ -110,63 +166,6 @@ public class MapObjectFragment extends Fragment {
                         byte[] decodedString = Base64.decode(encodedImage, Base64.DEFAULT);
                         Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
                         image.setImageBitmap(decodedByte);
-
-
-                        // Setting information
-
-                        if (element.getType().equals("MO")) {
-                            if (element.getSize().equals("S")) {
-                                image_points.setImageResource(R.drawable.favorite);
-                                points.setText("1");
-                            } else if (element.getSize().equals("M")) {
-                                points.setText("3");
-                                image_points.setImageResource(R.drawable.favorite);
-                            }
-                            else {
-                                points.setText("10");
-                                image_points.setImageResource(R.drawable.favorite);
-                            }
-                        } else {
-                            if (element.getSize().equals("S")) {
-                                points.setText("0-50");
-                                image_points.setImageResource(R.drawable.heart2);
-                            } else if (element.getSize().equals("M")) {
-                                points.setText("25-75");
-                                image_points.setImageResource(R.drawable.heart2);
-                            }
-                            else {
-                                points.setText("50-100");
-                                image_points.setImageResource(R.drawable.heart2);
-                            }
-                        }
-
-                        if ( ((MainActivity) getActivity()).isDistanceObjectOk(id) ) {
-                            if (element.getType().equals("MO")) {
-                                fight.setText("Wanna fight this monster?");
-                                yes.setVisibility(yes.VISIBLE);
-                                no.setVisibility(no.VISIBLE);
-                            } else {
-                                fight.setText("Wanna grab this candy?");
-                                yes.setVisibility(yes.VISIBLE);
-                                no.setVisibility(no.VISIBLE);
-                            }
-                        }
-                        else {
-                            if (element.getType().equals("MO")) {
-                                fight.setText("You are too far to fight this!");
-                            } else {
-                                fight.setText("You are too far to grab this!");
-                            }
-                            no.setVisibility(no.VISIBLE);
-                            yes.setVisibility(yes.GONE);
-                        }
-
-                        if (element.getType().equals("CA") && Model.getInstance().getLP() == 100) {
-                            fight.setText("You have enough life points!");
-                            no.setVisibility(no.VISIBLE);
-                            yes.setVisibility(yes.GONE);
-                        }
-
                     }
                 },
                 new Response.ErrorListener() {

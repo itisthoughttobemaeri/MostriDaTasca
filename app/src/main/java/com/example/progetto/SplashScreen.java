@@ -119,7 +119,6 @@ public class SplashScreen extends AppCompatActivity {
                 e.printStackTrace();
             }
             Log.d("Internet", "Should call next: myThread");
-            myThread.start();
             doGetUserRequest(Model.getInstance().getId());
         }
     }
@@ -243,6 +242,7 @@ public class SplashScreen extends AppCompatActivity {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         error.printStackTrace();
+                        myThread.start();
                         new InternetDialog().show(getSupportFragmentManager(), "dialog");
                     }
                 }

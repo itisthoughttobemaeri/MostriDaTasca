@@ -102,9 +102,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private Handler handler = new Handler();
     private Runnable runnable;
-    private ConnectivityManager connectivityManager;
-    private ConnectivityManager.NetworkCallback networkCallback;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -121,31 +118,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         permissionsManager = new PermissionsManager(this);
         locationEngine = LocationEngineProvider.getBestLocationEngine(this);
         locationListeningCallback = new LocationListeningCallback(this);
-
-        // Checking Internet status
-        connectivityManager = (ConnectivityManager)this.getSystemService(this.CONNECTIVITY_SERVICE);
-        networkCallback = new ConnectivityManager.NetworkCallback() {
-            private InternetDialog internetDialog;
-
-            @Override
-            public void onAvailable(@NonNull Network network) {
-                // Internet is available, do nothing
-                Log.d("Internet", "Available");
-                if (internetDialog != null)
-                    internetDialog.dismiss();
-            }
-
-            @Override
-            public void onLost(@NonNull Network network) {
-                super.onLost(network);
-                Log.d("Internet", "Lost");
-                internetDialog = new InternetDialog();
-                internetDialog.show(getSupportFragmentManager(), "dialog");
-            }
-        };
-
-        connectivityManager.registerDefaultNetworkCallback(networkCallback);
-
 
         final ImageView user_button = findViewById(R.id.user_map_image);
         user_button.setOnClickListener(new View.OnClickListener() {
@@ -221,7 +193,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             positionDialog.show(getSupportFragmentManager(), "dialog");
         }
     }
-
 
     // Class used every time there's a change in the position
 
@@ -407,7 +378,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     public boolean isDistanceObjectOk(int id) {
         ShownObject c = Model.getInstance().getShownObjectById(id);
-        //double distance = distance(lastLocationUpdate.getLatitude(), lastLocationUpdate.getLongitude(), c.getLat(), c.getLon(), "K" );
+        //double distance = distance(location.getLatitude(), location.getLongitude(), c.getLat(), c.getLon(), "K" );
         double distance = 0.03;
         if (distance <= 0.05) {
             return true;
@@ -609,7 +580,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             @Override
                             public void onErrorResponse(VolleyError error) {
                                 error.printStackTrace();
-                                new InternetDialog().show(getSupportFragmentManager(), "dialog");
                             }
                         }
                 );

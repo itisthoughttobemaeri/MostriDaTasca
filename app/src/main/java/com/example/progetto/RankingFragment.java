@@ -35,7 +35,7 @@ public class RankingFragment extends Fragment {
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         String url = "https://ewserver.di.unimi.it/mobicomp/mostri/ranking.php";
 

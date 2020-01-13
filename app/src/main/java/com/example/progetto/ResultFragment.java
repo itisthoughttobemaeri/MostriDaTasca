@@ -22,6 +22,13 @@ import org.json.JSONObject;
 
 public class ResultFragment extends Fragment {
     private int id;
+    private ImageView image;
+    private TextView result;
+    private TextView LP;
+    private TextView XP;
+    private TextView pointsGained;
+    private ImageView imageView2;
+    private ImageView imageView3;
 
     public ResultFragment(int id){
         this.id = id;
@@ -33,7 +40,7 @@ public class ResultFragment extends Fragment {
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         String url = "https://ewserver.di.unimi.it/mobicomp/mostri/fighteat.php";
@@ -53,101 +60,103 @@ public class ResultFragment extends Fragment {
             e.printStackTrace();
         }
 
+        image = view.findViewById(R.id.resultImage);
+        result = view.findViewById(R.id.result);
+        LP = view.findViewById(R.id.LP);
+        XP = view.findViewById(R.id.XP);
+        pointsGained = view.findViewById(R.id.pointsGained);
+        Button buttonConfirm = view.findViewById(R.id.ok);
+        imageView2 = view.findViewById(R.id.imageView2);
+        imageView3 = view.findViewById(R.id.imageView3);
+
+        buttonConfirm.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d("ResultFragment", "Go back clicked");
+                Intent intent = new Intent(getActivity().getApplicationContext(), MainActivity.class);
+                startActivity(intent);
+            }
+        });
+
         JsonObjectRequest JSONRequest_result = new JsonObjectRequest(
-                Request.Method.POST,
-                url,
-                jsonObject,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        Log.d("VolleyRequest", response.toString());
-                        ImageView image = getActivity().findViewById(R.id.resultImage);
-                        TextView result = getActivity().findViewById(R.id.result);
-                        TextView LP = getActivity().findViewById(R.id.LP);
-                        TextView XP = getActivity().findViewById(R.id.XP);
-                        TextView pointsGained = getActivity().findViewById(R.id.pointsGained);
-                        Button buttonConfirm = getActivity().findViewById(R.id.ok);
-                        ImageView imageView2 = getActivity().findViewById(R.id.imageView2);
-                        ImageView imageView3 = getActivity().findViewById(R.id.imageView3);
+            Request.Method.POST,
+            url,
+            jsonObject,
+            new Response.Listener<JSONObject>() {
+                @Override
+                public void onResponse(JSONObject response) {
+                    Log.d("VolleyRequest", response.toString());
 
-                        Boolean userStatus = null;
-                        try {
-                            userStatus = response.getBoolean("died");
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
 
-                        int LP_points = 0;
-                        try {
-                            LP_points = Integer.parseInt(response.getString("lp"));
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
+                    Boolean userStatus = null;
+                    try {
+                        userStatus = response.getBoolean("died");
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
 
-                        int XP_points = 0;
-                        try {
-                            XP_points = Integer.parseInt(response.getString("xp"));
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
+                    int LP_points = 0;
+                    try {
+                        LP_points = Integer.parseInt(response.getString("lp"));
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
 
-                        if (userStatus) {
-                            // The user died
-                            image.setImageResource(R.drawable.ic_tombstone);
-                            result.setText("You died...");
+                    int XP_points = 0;
+                    try {
+                        XP_points = Integer.parseInt(response.getString("xp"));
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+                    if (userStatus) {
+                        // The user died
+                        image.setImageResource(R.drawable.ic_tombstone);
+                        result.setText("You died...");
+                        pointsGained.setVisibility(View.GONE);
+                        LP.setVisibility(View.GONE);
+                        XP.setVisibility(View.GONE);
+                        imageView2.setVisibility(View.GONE);
+                        imageView3.setVisibility(View.GONE);
+                    }
+                    else {
+                        // The user survived
+                        LP.setText(Integer.toString(LP_points));
+                        XP.setText(Integer.toString(XP_points));
+
+                        // Model points are the past points
+                        if (Model.getInstance().getLP()<LP_points) {
+                            // The user picked up a candy
+                            image.setImageResource(R.drawable.ic_donation);
+                            result.setText("You chose a good one!");
+                            pointsGained.setText( "You gained " + (LP_points - Model.getInstance().getLP()) + "LP, so now you have:");
+
+                        } else if (Model.getInstance().getXP()<XP_points) {
+                            // The user won against the monster
+                            image.setImageResource(R.drawable.ic_win);
+                            result.setText("You are invincible!");
+                            pointsGained.setText( "You gained " + (XP_points - Model.getInstance().getXP()) + "XP and you lost " +(Model.getInstance().getLP() - LP_points) + "LP, so now you have:");
+
+                        } else if (Model.getInstance().getLP()==LP_points || Model.getInstance().getXP()==XP_points) {
+                            // The user didn't earn anything
+                            image.setImageResource(R.drawable.ic_okay);
+                            result.setText("You didn't lose neither earn anything...");
                             pointsGained.setVisibility(View.GONE);
-                            LP.setVisibility(View.GONE);
-                            XP.setVisibility(View.GONE);
-                            imageView2.setVisibility(View.GONE);
-                            imageView3.setVisibility(View.GONE);
+
                         }
-                        else {
-                            // The user survived
-                            LP.setText(Integer.toString(LP_points));
-                            XP.setText(Integer.toString(XP_points));
-
-                            // Model points are the past points
-                            if (Model.getInstance().getLP()<LP_points) {
-                                // The user picked up a candy
-                                image.setImageResource(R.drawable.ic_donation);
-                                result.setText("You chose a good one!");
-                                pointsGained.setText( "You gained " + (LP_points - Model.getInstance().getLP()) + "LP, so now you have:");
-
-                            } else if (Model.getInstance().getXP()<XP_points) {
-                                // The user won against the monster
-                                image.setImageResource(R.drawable.ic_win);
-                                result.setText("You are invincible!");
-                                pointsGained.setText( "You gained " + (XP_points - Model.getInstance().getXP()) + "XP and you lost " +(Model.getInstance().getLP() - LP_points) + "LP, so now you have:");
-
-                            } else if (Model.getInstance().getLP()==LP_points || Model.getInstance().getXP()==XP_points) {
-                                // The user didn't earn anything
-                                image.setImageResource(R.drawable.ic_okay);
-                                result.setText("You didn't lose neither earn anything...");
-                                pointsGained.setVisibility(View.GONE);
-
-                            }
-                        }
-
-                        buttonConfirm.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                Log.d("ResultFragment", "Go back clicked");
-                                Intent intent = new Intent(getActivity().getApplicationContext(), MainActivity.class);
-                                startActivity(intent);
-                            }
-                        });
-
-                        Model.getInstance().setXP(XP_points);
-                        Model.getInstance().setLP(LP_points);
                     }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        error.printStackTrace();
-                        new InternetDialog().show(getActivity().getSupportFragmentManager(), "dialog");
-                    }
+
+                    Model.getInstance().setXP(XP_points);
+                    Model.getInstance().setLP(LP_points);
                 }
+            },
+            new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    error.printStackTrace();
+                    new InternetDialog().show(getActivity().getSupportFragmentManager(), "dialog");
+                }
+            }
         );
         Model.getInstance().getRequestQueue(getActivity().getApplicationContext()).add(JSONRequest_result);
         Log.d("VolleyQueue", "Result request added");

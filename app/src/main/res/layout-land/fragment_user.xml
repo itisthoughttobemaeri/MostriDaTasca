@@ -120,16 +120,6 @@
 
             </LinearLayout>
 
-            <Button
-                android:id="@+id/edit"
-                android:layout_width="88dp"
-                android:layout_height="88dp"
-                android:layout_gravity="center"
-                android:background="@android:color/transparent"
-                android:foreground="@drawable/ic_confirm"
-                android:onClick="onClickEdit"
-                android:visibility="visible" />
-
         </LinearLayout>
 
     </LinearLayout>

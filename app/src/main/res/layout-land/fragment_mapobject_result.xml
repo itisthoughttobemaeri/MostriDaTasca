@@ -41,7 +41,6 @@
                 android:layout_marginHorizontal="60dp"
                 android:fontFamily="@font/akajufont"
                 android:gravity="center"
-                android:text="win/lost/died"
                 android:textColor="#000000"
                 android:textSize="24sp"
                 android:textStyle="bold" />
@@ -55,7 +54,6 @@
             android:layout_marginHorizontal="60dp"
             android:fontFamily="@font/akajufont"
             android:gravity="center"
-            android:text="points gained"
             android:textColor="#000000"
             android:textSize="18sp"
             android:textStyle="bold"
