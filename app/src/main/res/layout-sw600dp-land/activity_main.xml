@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:mapbox="http://schemas.android.com/tools"
+    android:id="@+id/layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <!-- Main content -->
+
+        <Button
+            android:id="@+id/button"
+            android:layout_width="117dp"
+            android:layout_height="117dp"
+            android:layout_gravity="bottom|right"
+            android:layout_marginRight="16dp"
+            android:layout_marginBottom="16dp"
+            android:background="@drawable/ic_center"
+            android:onClick="onClickCenter" />
+
+        <Button
+            android:id="@+id/fab"
+            android:layout_width="117dp"
+            android:layout_height="117dp"
+            android:layout_gravity="bottom|left"
+            android:layout_marginLeft="16dp"
+            android:layout_marginBottom="16dp"
+            android:background="@drawable/ic_add"
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/ranking_button"
+            android:layout_width="117dp"
+            android:layout_height="117dp"
+            android:layout_gravity="bottom|left"
+            android:layout_marginLeft="16dp"
+            android:layout_marginBottom="149dp"
+            android:background="@drawable/ic_ranking"
+            android:visibility="visible" />
+
+        <Button
+            android:id="@+id/question_button"
+            android:layout_width="117dp"
+            android:layout_height="117dp"
+            android:layout_gravity="bottom|left"
+            android:layout_marginLeft="16dp"
+            android:layout_marginBottom="16dp"
+            android:background="@drawable/ic_qm"
+            android:gravity="bottom|left"
+            android:visibility="visible" />
+
+        <com.mapbox.mapboxsdk.maps.MapView
+            android:id="@+id/mapView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" >
+
+        </com.mapbox.mapboxsdk.maps.MapView>
+
+        <ImageView
+            android:id="@+id/xp_image"
+            android:layout_width="110dp"
+            android:layout_height="110dp"
+            android:layout_marginLeft="16dp"
+            android:layout_marginTop="134dp"
+            app:srcCompat="@drawable/favorite" />
+
+        <TextView
+            android:id="@+id/lp_points"
+            android:layout_width="wrap_content"
+            android:layout_height="110dp"
+            android:layout_marginLeft="134dp"
+            android:layout_marginTop="16dp"
+            android:fontFamily="@font/akajufont"
+            android:gravity="center"
+            android:text="100"
+            android:textColor="#000000"
+            android:textSize="48dp"
+            android:textStyle="bold" />
+
+        <ImageView
+            android:id="@+id/lp_image"
+            android:layout_width="110dp"
+            android:layout_height="110dp"
+            android:layout_marginLeft="16dp"
+            android:layout_marginTop="16dp"
+            android:visibility="visible"
+            app:srcCompat="@drawable/heart2" />
+
+        <TextView
+            android:id="@+id/xp_points"
+            android:layout_width="wrap_content"
+            android:layout_height="110dp"
+            android:layout_marginLeft="134dp"
+            android:layout_marginTop="134dp"
+            android:fontFamily="@font/akajufont"
+            android:gravity="center"
+            android:text="100"
+            android:textColor="#000000"
+            android:textSize="48dp"
+            android:textStyle="bold" />
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/user_map_image"
+            android:layout_width="117dp"
+            android:layout_height="117dp"
+            android:layout_gravity="right"
+            android:layout_marginTop="16dp"
+            android:layout_marginRight="16dp"
+            android:visibility="visible"
+            app:civ_border_color="#FF262626"
+            app:civ_border_width="4dp"
+            app:civ_circle_background_color="#FFFFFF" />
+
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+</FrameLayout>
