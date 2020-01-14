@@ -378,31 +378,23 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     public boolean isDistanceObjectOk(int id) {
         ShownObject c = Model.getInstance().getShownObjectById(id);
-        //double distance = distance(location.getLatitude(), location.getLongitude(), c.getLat(), c.getLon(), "K" );
-        double distance = 0.03;
+        double distance = haversine(location.getLatitude(), location.getLongitude(), c.getLat(), c.getLon());
+        //double distance = 0.03;
         if (distance <= 0.05) {
             return true;
         }
         return false;
     }
 
-    private static double distance(double lat1, double lon1, double lat2, double lon2, String unit) {
-        if ((lat1 == lat2) && (lon1 == lon2)) {
-            return 0;
-        }
-        else {
-            double theta = lon1 - lon2;
-            double dist = Math.sin(Math.toRadians(lat1)) * Math.sin(Math.toRadians(lat2)) + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) * Math.cos(Math.toRadians(theta));
-            dist = Math.acos(dist);
-            dist = Math.toDegrees(dist);
-            dist = dist * 60 * 1.1515;
-            if (unit.equals("K")) {
-                dist = dist * 1.609344;
-            } else if (unit.equals("N")) {
-                dist = dist * 0.8684;
-            }
-            return (dist);
-        }
+    public static double haversine(double lat1, double lon1, double lat2, double lon2) {
+        double R = 6372.8; // In kilometers
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+        lat1 = Math.toRadians(lat1);
+        lat2 = Math.toRadians(lat2);
+        double a = Math.pow(Math.sin(dLat / 2),2) + Math.pow(Math.sin(dLon / 2),2) * Math.cos(lat1) * Math.cos(lat2);
+        double c = 2 * Math.asin(Math.sqrt(a));
+        return R * c;
     }
 
     private void setInformation() {
