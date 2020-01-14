@@ -12,7 +12,7 @@
         android:layout_width="80dp"
         android:layout_height="80dp"
         android:layout_marginStart="500dp"
-        android:layout_marginBottom="430dp"
+        android:layout_marginBottom="405dp"
         android:background="@drawable/ic_add"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
