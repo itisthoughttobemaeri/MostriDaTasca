@@ -36,7 +36,7 @@ public class ViewHolder extends RecyclerView.ViewHolder{
         number.setText(rank + "°");
         xp_image.setImageResource(R.drawable.favorite);
         if (user.getUsername() == null || user.getUsername().equals("")) {
-            name.setText("player");
+            name.setText("player" + String.valueOf(Math.random()).substring(2,4));
         }
         else {
             name.setText(user.getUsername());

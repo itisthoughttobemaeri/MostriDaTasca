@@ -17,6 +17,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.Nullable;
@@ -60,21 +61,10 @@ public class UserFragment extends Fragment {
         textView_xp = getActivity().findViewById(R.id.user_xp_points);
         imageView = getActivity().findViewById(R.id.user_image);
 
-        textView_name.setText(Model.getInstance().getUsername());
-        textView_lp.setText(Model.getInstance().getLP() + "");
-        textView_xp.setText(Model.getInstance().getXP() + "");
-
-        if (Model.getInstance().getImage() == null || Model.getInstance().getImage().equals("null"))
-            imageView.setImageResource(R.drawable.ic_student);
-        else {
-            Log.d("ImageConversion", Model.getInstance().getImage());
-            byte[] byteArray = Base64.decode(Model.getInstance().getImage(), Base64.DEFAULT);
-            Bitmap decodedImage = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
-            imageView.setImageBitmap(decodedImage);
-        }
-
         String url = "https://ewserver.di.unimi.it/mobicomp/mostri/getprofile.php";
+
         // This request was added to make sure a user offline got his data once back online
+
         JsonObjectRequest JSONRequest_user_edit = new JsonObjectRequest(
                 Request.Method.POST,
                 url,
@@ -125,11 +115,12 @@ public class UserFragment extends Fragment {
                 // Handle the back button event
                 Log.d("UserFragment", "Go back clicked");
 
-                // Start request to set information on the server
-                Log.d("ButtonEdit", "Edit button clicked");
+                // Start request to set information on the server (only the username) -- let's see
+
                 TextView tv = view.findViewById(R.id.user_name);
                 final String username = tv.getText().toString();
                 Log.d("ButtonEdit", "Username new is:" + username);
+
                 // Getting the id to build the string to POST
                 String id = null;
                 try {
@@ -168,8 +159,8 @@ public class UserFragment extends Fragment {
                             @Override
                             public void onErrorResponse(VolleyError error) {
                                 error.printStackTrace();
-                                Intent intent = new Intent(getActivity().getApplicationContext(), MainActivity.class);
-                                startActivity(intent);
+                                Log.d("ImageConversion", "The image was refused by the server");
+
                             }
                         }
                 );
@@ -211,7 +202,6 @@ public class UserFragment extends Fragment {
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         if (resultCode == RESULT_OK && requestCode == 0) {
             Uri imageUri = data.getData();
-            imageView.setImageURI(imageUri);
 
             Bitmap bitmap = null;
             try {
@@ -220,12 +210,19 @@ public class UserFragment extends Fragment {
                 e.printStackTrace();
             }
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
             byte[] byteArray = byteArrayOutputStream.toByteArray();
             String encodedImage = Base64.encodeToString(byteArray, Base64.DEFAULT);
 
-            Log.d("EncodedImage", encodedImage);
-            Model.getInstance().setImage(encodedImage);
+            if (encodedImage.length() < 137000) {
+                Log.d("EncodedImage", encodedImage);
+                Model.getInstance().setImage(encodedImage);
+                imageView.setImageURI(imageUri);
+            } else {
+                // Toast
+                Toast toast = Toast.makeText(getActivity().getApplicationContext(), "The image is too big!", Toast.LENGTH_SHORT);
+                toast.show();
+            }
         }
         super.onActivityResult(requestCode, resultCode, data);
     }

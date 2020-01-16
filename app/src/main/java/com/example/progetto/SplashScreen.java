@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.ImageDecoder;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.os.Bundle;
@@ -32,6 +33,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 public class SplashScreen extends AppCompatActivity {
     private SharedPreferences.Editor editor;
@@ -128,6 +130,7 @@ public class SplashScreen extends AppCompatActivity {
     private void doSetProfile(String string) {
         // Json object must be session id
         String url = "https://ewserver.di.unimi.it/mobicomp/mostri/setprofile.php";
+
         String json = "{'session_id':" + string + ", 'username': 'player', 'img':'null'}";
 
         try {
@@ -242,8 +245,8 @@ public class SplashScreen extends AppCompatActivity {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         error.printStackTrace();
-                        myThread.start();
                         new InternetDialog().show(getSupportFragmentManager(), "dialog");
+                        myThread.start();
                     }
                 }
         );
