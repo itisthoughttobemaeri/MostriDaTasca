@@ -10,7 +10,7 @@ public class ShownObject {
     private String size;
     private String name;
 
-    private String image;
+    private String img;
 
 
     public int getId() {
@@ -38,7 +38,7 @@ public class ShownObject {
     }
 
     public String getImage() {
-        return image;
+        return img;
     }
 
     public ShownObject(int id, double lat, double lon, String type, String size, String name, String image) {
@@ -48,7 +48,7 @@ public class ShownObject {
         this.lon = lon;
         this.size = size;
         this.type = type;
-        this.image = image;
+        this.img = image;
     }
 
     @Override
@@ -60,6 +60,6 @@ public class ShownObject {
                 ", type='" + type + '\'' +
                 ", size='" + size + '\'' +
                 ", name='" + name + '\'' +
-                ", image='" + image;
+                ", image='" + img;
     }
 }
