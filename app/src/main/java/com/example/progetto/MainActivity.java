@@ -546,7 +546,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                                     // JSON data converted into array
 
                                     ShownObject[] shownObjects = gson.fromJson(mapObjects.toString(), ShownObject[].class);
-                                    Log.d("VolleyJson", "[UPDATE ]This is the first object from the server" + shownObjects[0].toString());
+                                    Log.d("VolleyJson", "[UPDATE] This is the first object from the server" + shownObjects[0].toString());
                                     Model.getInstance().refreshShownObjects(shownObjects);
 
                                     // Deleting all the symbols
