@@ -27,6 +27,7 @@ import org.json.JSONObject;
 
 public class MapObjectFragment extends Fragment {
     private int id;
+    private ImageView image;
 
     public MapObjectFragment(JsonElement jsonElement){
         JsonObject jsonObject = jsonElement.getAsJsonObject();
@@ -87,6 +88,7 @@ public class MapObjectFragment extends Fragment {
         TextView name = getActivity().findViewById(R.id.name);
         TextView size = getActivity().findViewById(R.id.size);
         ImageView image_points = getActivity().findViewById(R.id.points_object);
+        image = getActivity().findViewById(R.id.image);
 
         ShownObject element = Model.getInstance().getShownObjectById(id);
         size.setText(element.getSize());
@@ -147,37 +149,43 @@ public class MapObjectFragment extends Fragment {
             yes.setVisibility(yes.GONE);
         }
 
-        JsonObjectRequest JSONRequest_image_download = new JsonObjectRequest(
-                Request.Method.POST,
-                url,
-                jsonObject,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        Log.d("VolleyRequest", "Success");
-                        ImageView image = getActivity().findViewById(R.id.image);
+        if (element.getImage() == null) {
+            JsonObjectRequest JSONRequest_image_download = new JsonObjectRequest(
+                    Request.Method.POST,
+                    url,
+                    jsonObject,
+                    new Response.Listener<JSONObject>() {
+                        @Override
+                        public void onResponse(JSONObject response) {
+                            Log.d("VolleyRequest", "Success image download (first&last time)");
+                            String encodedImage = null;
+                            try {
+                                encodedImage = response.getString("img");
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                            byte[] decodedString = Base64.decode(encodedImage, Base64.DEFAULT);
+                            Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+                            image.setImageBitmap(decodedByte);
 
-                        String encodedImage = null;
-                        try {
-                            encodedImage = response.getString("img");
-                        } catch (JSONException e) {
-                            e.printStackTrace();
+                            Model.getInstance().getShownObjectById(id).setImage(encodedImage);
                         }
-                        byte[] decodedString = Base64.decode(encodedImage, Base64.DEFAULT);
-                        Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
-                        image.setImageBitmap(decodedByte);
+                    },
+                    new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            error.printStackTrace();
+                            new InternetDialog().show(getActivity().getSupportFragmentManager(), "dialog");
+                        }
                     }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        error.printStackTrace();
-                        new InternetDialog().show(getActivity().getSupportFragmentManager(), "dialog");
-                    }
-                }
-        );
-        Model.getInstance().getRequestQueue(getActivity().getApplicationContext()).add(JSONRequest_image_download);
-        Log.d("VolleyQueue", "Image request added");
+            );
+            Model.getInstance().getRequestQueue(getActivity().getApplicationContext()).add(JSONRequest_image_download);
+            Log.d("VolleyQueue", "Image request added");
+        } else {
+            Log.d("ImageModel", "Using image in the model");
+            byte[] decodedString = Base64.decode(element.getImage(), Base64.DEFAULT);
+            Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+            image.setImageBitmap(decodedByte);
+        }
     }
-
 }

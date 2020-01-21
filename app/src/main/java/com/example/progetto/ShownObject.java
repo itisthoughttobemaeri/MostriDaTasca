@@ -51,6 +51,10 @@ public class ShownObject {
         this.img = image;
     }
 
+    public void setImage(String img) {
+        this.img = img;
+    }
+
     @Override
     public String toString() {
         return "ShownObject: " +

@@ -79,7 +79,7 @@
             android:fontFamily="@font/akajufont"
             android:gravity="center"
             android:text="100"
-            android:textColor="#CA4051"
+            android:textColor="#000000"
             android:textSize="24sp"
             android:textStyle="bold" />
 
@@ -102,7 +102,7 @@
             android:gravity="center"
             android:shadowColor="#00000000"
             android:text="100"
-            android:textColor="#BE8C43"
+            android:textColor="#000000"
             android:textSize="24sp"
             android:textStyle="bold" />
 

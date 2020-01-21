@@ -1,6 +1,5 @@
 <resources>
-    <string name="app_name">Progetto</string>
-
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="app_name">MostriDaTasca</string>
+    <string name="mdt_description">You are a monster hunter. When you\'re less than 50m from a monster, you can fight it. By fighting a monster, you can lose LPs. If you die, you lose all your XPs and you come back with 100 LPs. Otherwise, you earn XPs depending on the size of the monster. When you are less than 50m from a candy you can pick it up and earn LPs depending on the size of the candy.</string>
+    <string name="test_session_id">f0mGgGwcOMUkWBkW</string>
 </resources>

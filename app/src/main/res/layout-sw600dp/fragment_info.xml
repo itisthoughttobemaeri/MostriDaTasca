@@ -52,7 +52,8 @@
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="160dp"
             android:fontFamily="@font/akajufont"
-            android:text="You are a monster hunter. When you're less than 50m from a monster, you can fight it. By fighting a monster, you can lose LPs. If you die, you lose all your XPs and you come back with 100 LPs. Otherwise, you earn XPs depending on the size of the monster. When you are less than 50m from a candy you can pick it up and earn LPs depending on the size of the candy."
+            android:justificationMode="inter_word"
+            android:text="@string/mdt_description"
             android:textAlignment="center"
             android:textColor="#5A5A5A"
             android:textSize="27sp" />
@@ -88,7 +89,7 @@
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="175dp"
             android:fontFamily="@font/akajufont"
-            android:text="mobicomp.com Mdt."
+            android:text="mostridatasca.com"
             android:textAlignment="center"
             android:textColor="#5A5A5A"
             android:textSize="24sp" />

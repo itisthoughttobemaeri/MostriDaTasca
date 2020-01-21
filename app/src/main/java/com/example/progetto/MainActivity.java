@@ -85,15 +85,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private MapView mapView;
     private MapboxMap mapboxMap;
 
-    // Variable used for current location
-
-    //private FusedLocationProviderClient fusedLocationClient;
-
     public Location location;
 
     private SymbolManager symbolManager;
     private Style mapStyle;
-    private PermissionsManager permissionsManager;
+
+    // With the PermissionsManager class, you can check whether the user has granted location permission
+
+    private static PermissionsManager permissionsManager;
     private LocationEngine locationEngine;
     private LocationListeningCallback locationListeningCallback;
     private final long DEFAULT_INTERVAL_IN_MILLISECONDS = 1000L;
@@ -114,7 +113,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mapView.getMapAsync(this);
         setInformation();
 
-        // With the PermissionsManager class, you can check whether the user has granted location permission
         permissionsManager = new PermissionsManager(this);
         locationEngine = LocationEngineProvider.getBestLocationEngine(this);
         locationListeningCallback = new LocationListeningCallback(this);
@@ -248,7 +246,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             enableLocationComponent(mapStyle);
         } else {
             Log.d("Location", "Asking for permission");
-            permissionsManager = new PermissionsManager(this);
             permissionsManager.requestLocationPermissions(this);
         }
 
@@ -378,8 +375,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     public boolean isDistanceObjectOk(int id) {
         ShownObject c = Model.getInstance().getShownObjectById(id);
-        double distance = haversine(location.getLatitude(), location.getLongitude(), c.getLat(), c.getLon());
-        //double distance = 0.03;
+        //double distance = haversine(location.getLatitude(), location.getLongitude(), c.getLat(), c.getLon());
+        double distance = 0.03;
         if (distance <= 0.05) {
             return true;
         }
@@ -580,5 +577,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         };
         handler.post(runnable);
+    }
+
+    public static PermissionsManager getPermissionsManager() {
+        return permissionsManager;
     }
 }
