@@ -4,6 +4,15 @@ public class ShownObject {
     private int id;
 
     private double lat;
+
+    public void setLat(double lat) {
+        this.lat = lat;
+    }
+
+    public void setLon(double lon) {
+        this.lon = lon;
+    }
+
     private double lon;
 
     private String type;

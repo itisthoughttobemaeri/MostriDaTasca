@@ -29,14 +29,9 @@ public class MapObjectFragment extends Fragment {
     private int id;
     private ImageView image;
 
-    public MapObjectFragment(JsonElement jsonElement){
-        JsonObject jsonObject = jsonElement.getAsJsonObject();
-        Gson gson = new Gson();
-        id = Integer.parseInt(jsonObject.get("id").toString());
-    }
-
     @Override
     public View onCreateView(LayoutInflater layoutInflater, ViewGroup container, Bundle bundle) {
+        id = Integer.parseInt(getArguments().getString("id"));
         return layoutInflater.inflate(R.layout.fragment_mapobject_element, container, false);
     }
 
@@ -67,7 +62,11 @@ public class MapObjectFragment extends Fragment {
             public void onClick(View view) {
                 Log.d("ElementFragment", "Confirm clicked");
                 // Create new fragment
-                ResultFragment resultFragment = new ResultFragment(id);
+                Bundle bundle = new Bundle();
+                bundle.putInt("id", id);
+                Log.d("IDtoPass", id + "");
+                ResultFragment resultFragment = new ResultFragment();
+                resultFragment.setArguments(bundle);
                 ((MainActivity) getActivity()).addFragment(resultFragment);
             }
         });
@@ -157,7 +156,7 @@ public class MapObjectFragment extends Fragment {
                     new Response.Listener<JSONObject>() {
                         @Override
                         public void onResponse(JSONObject response) {
-                            Log.d("VolleyRequest", "Success image download (first&last time)");
+                            Log.d("ImageModel", "Success image download (first&last time)");
                             String encodedImage = null;
                             try {
                                 encodedImage = response.getString("img");

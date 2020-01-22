@@ -11,8 +11,6 @@
         android:id="@+id/linearLayout"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginStart="70dp"
-        android:layout_marginEnd="70dp"
         android:background="@drawable/ic_background"
         android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -21,17 +19,17 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="748dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_marginTop="100dp"
+            android:layout_marginTop="90dp"
             android:gravity="center"
             android:orientation="horizontal">
 
             <de.hdodenhof.circleimageview.CircleImageView
                 android:id="@+id/image"
-                android:layout_width="300dp"
-                android:layout_height="300dp"
+                android:layout_width="250dp"
+                android:layout_height="250dp"
                 android:layout_gravity="center"
                 android:padding="7dp"
                 app:civ_border_color="#FF262626"
@@ -40,13 +38,13 @@
 
             <TextView
                 android:id="@+id/name"
-                android:layout_width="487dp"
-                android:layout_height="wrap_content"
+                android:layout_width="401dp"
+                android:layout_height="match_parent"
                 android:layout_gravity="center"
                 android:layout_marginHorizontal="30dp"
                 android:fontFamily="@font/akajufont"
                 android:gravity="center"
-                android:text="name"
+                android:text="Caramellona al limone"
                 android:textColor="#000000"
                 android:textSize="58sp"
                 android:textStyle="bold"
@@ -58,7 +56,6 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_marginHorizontal="20dp"
-            android:layout_marginTop="10dp"
             android:foregroundGravity="center"
             android:gravity="center"
             android:orientation="horizontal">
@@ -77,8 +74,8 @@
 
             <ImageView
                 android:id="@+id/points_object"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
+                android:layout_width="90dp"
+                android:layout_height="90dp"
                 android:layout_weight="1"
                 tools:srcCompat="@drawable/favorite" />
 
@@ -121,8 +118,8 @@
 
             <Button
                 android:id="@+id/confirm"
-                android:layout_width="150dp"
-                android:layout_height="150dp"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
                 android:layout_marginRight="40dp"
                 android:background="@android:color/transparent"
                 android:foreground="@drawable/ic_confirm"
@@ -133,8 +130,8 @@
 
             <Button
                 android:id="@+id/deny"
-                android:layout_width="150dp"
-                android:layout_height="150dp"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
                 android:background="@android:color/transparent"
                 android:foreground="@drawable/ic_cancel"
                 android:visibility="visible" />

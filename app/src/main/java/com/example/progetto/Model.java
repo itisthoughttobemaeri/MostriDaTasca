@@ -7,6 +7,8 @@ import com.android.volley.toolbox.Volley;
 
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+
 public class Model {
 
     private static final Model ourInstance = new Model();
@@ -23,7 +25,7 @@ public class Model {
     private int LP;
     private int XP;
 
-    private ShownObject[] shownObjects;
+    private ArrayList<ShownObject> shownObjects;
 
     private User[] users;
 
@@ -63,20 +65,20 @@ public class Model {
         return this.users;
     }
 
-    public ShownObject[] getShownObjects() {
+    public ArrayList<ShownObject> getShownObjects() {
         return shownObjects;
     }
 
     public ShownObject getShownObjectById(int id) {
-        for (int i = 0; i < shownObjects.length; i++) {
-            if (shownObjects[i].getId() == id) {
-                return shownObjects[i];
+        for (int i = 0; i < shownObjects.size(); i++) {
+            if (shownObjects.get(i).getId() == id) {
+                return shownObjects.get(i);
             }
         }
         return null;
     }
 
-    public void refreshShownObjects(ShownObject[] shownObjects) {
+    public void refreshShownObjects(ArrayList<ShownObject> shownObjects) {
         this.shownObjects = shownObjects;
     }
 

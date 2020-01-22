@@ -13,6 +13,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -27,6 +28,7 @@ import android.net.NetworkRequest;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.provider.MediaStore;
 import android.util.Base64;
 import android.util.Log;
 import android.view.Gravity;
@@ -46,6 +48,7 @@ import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mapbox.android.core.location.LocationEngine;
 import com.mapbox.android.core.location.LocationEngineCallback;
@@ -97,7 +100,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private LocationListeningCallback locationListeningCallback;
     private final long DEFAULT_INTERVAL_IN_MILLISECONDS = 1000L;
     private final long DEFAULT_MAX_WAIT_TIME = DEFAULT_INTERVAL_IN_MILLISECONDS * 5;
-    private final long MAP_REFRESH_TIME_IN_MILLISECONDS = 10000;
+    private final long MAP_REFRESH_TIME_IN_MILLISECONDS = 3000;
 
     private Handler handler = new Handler();
     private Runnable runnable;
@@ -173,6 +176,16 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         permissionsManager.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 10) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Log.d("Gallery", "Permission is now granted");
+                Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI);
+                startActivityForResult(intent, 10);
+            } else {
+                Log.d("Gallery", "Permission is not granted");
+            }
+            return;
+        }
     }
 
     @Override
@@ -444,7 +457,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private void addObjectsToMap(Style style) {
         // Adding objects to the map
 
-        ShownObject[] mapObjects = Model.getInstance().getShownObjects();
+        ArrayList<ShownObject> mapObjects = Model.getInstance().getShownObjects();
         symbolManager = new SymbolManager(mapView, mapboxMap, style);
 
         // Allow icons overlap
@@ -456,69 +469,73 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         // Creating symbols
         if (mapObjects != null)
-            for (int i = 0; i<mapObjects.length; i++) {
-            // Adding id data as json element to each symbol
-            JsonObject element = gson.fromJson("{'id': " + mapObjects[i].getId() + "}", JsonObject.class);
-            if ("CA".equals(mapObjects[i].getType())) {
-                switch (mapObjects[i].getSize()) {
-                    case "L" :
-                        symbolManager.create(new SymbolOptions()
-                                .withLatLng(new LatLng(mapObjects[i].getLat(), mapObjects[i].getLon()))
-                                .withIconImage("candy")
-                                .withData(element)
-                        );
-                        break;
-                    case "M" :
-                        symbolManager.create(new SymbolOptions()
-                                .withLatLng(new LatLng(mapObjects[i].getLat(), mapObjects[i].getLon()))
-                                .withIconImage("candy3")
-                                .withData(element)
-                        );
-                        break;
-                    case "S" :
-                        symbolManager.create(new SymbolOptions()
-                                .withLatLng(new LatLng(mapObjects[i].getLat(), mapObjects[i].getLon()))
-                                .withIconImage("candy2")
-                                .withData(element)
-                        );
-                        break;
+            for (int i = 0; i<mapObjects.size(); i++) {
+                // Adding id data as json element to each symbol
+                JsonObject element = gson.fromJson("{'id': " + mapObjects.get(i).getId() + "}", JsonObject.class);
+                if ("CA".equals(mapObjects.get(i).getType())) {
+                    switch (mapObjects.get(i).getSize()) {
+                        case "L" :
+                            symbolManager.create(new SymbolOptions()
+                                    .withLatLng(new LatLng(mapObjects.get(i).getLat(), mapObjects.get(i).getLon()))
+                                    .withIconImage("candy")
+                                    .withData(element)
+                            );
+                            break;
+                        case "M" :
+                            symbolManager.create(new SymbolOptions()
+                                    .withLatLng(new LatLng(mapObjects.get(i).getLat(), mapObjects.get(i).getLon()))
+                                    .withIconImage("candy3")
+                                    .withData(element)
+                            );
+                            break;
+                        case "S" :
+                            symbolManager.create(new SymbolOptions()
+                                    .withLatLng(new LatLng(mapObjects.get(i).getLat(), mapObjects.get(i).getLon()))
+                                    .withIconImage("candy2")
+                                    .withData(element)
+                            );
+                            break;
+                    }
+                }
+                else {
+                    switch (mapObjects.get(i).getSize()) {
+                        case "L":
+                            symbolManager.create(new SymbolOptions()
+                                    .withLatLng(new LatLng(mapObjects.get(i).getLat(), mapObjects.get(i).getLon()))
+                                    .withIconImage("dragon")
+                                    .withData(element)
+                            );
+                            break;
+                        case "M":
+                            symbolManager.create(new SymbolOptions()
+                                    .withLatLng(new LatLng(mapObjects.get(i).getLat(), mapObjects.get(i).getLon()))
+                                    .withIconImage("dragonfly")
+                                    .withData(element)
+                            );
+                            break;
+                        case "S":
+                            symbolManager.create(new SymbolOptions()
+                                    .withLatLng(new LatLng(mapObjects.get(i).getLat(), mapObjects.get(i).getLon()))
+                                    .withIconImage("octopus")
+                                    .withData(element)
+                            );
+                            break;
+                    }
                 }
             }
-            else {
-                switch (mapObjects[i].getSize()) {
-                    case "L":
-                        symbolManager.create(new SymbolOptions()
-                                .withLatLng(new LatLng(mapObjects[i].getLat(), mapObjects[i].getLon()))
-                                .withIconImage("dragon")
-                                .withData(element)
-                        );
-                        break;
-                    case "M":
-                        symbolManager.create(new SymbolOptions()
-                                .withLatLng(new LatLng(mapObjects[i].getLat(), mapObjects[i].getLon()))
-                                .withIconImage("dragonfly")
-                                .withData(element)
-                        );
-                        break;
-                    case "S":
-                        symbolManager.create(new SymbolOptions()
-                                .withLatLng(new LatLng(mapObjects[i].getLat(), mapObjects[i].getLon()))
-                                .withIconImage("octopus")
-                                .withData(element)
-                        );
-                        break;
-                }
-            }
-        }
 
-        symbolManager.addClickListener(new OnSymbolClickListener() {
-            @Override
-            public void onAnnotationClick(Symbol symbol) {
-                Log.d("Symbol", "Symbol clicked");
-                MapObjectFragment mapObjectFragment = new MapObjectFragment(symbol.getData());
-                addFragment(mapObjectFragment);
-            }
-        });
+            symbolManager.addClickListener(new OnSymbolClickListener() {
+                @Override
+                public void onAnnotationClick(Symbol symbol) {
+                    Log.d("Symbol", "Symbol clicked");
+                    Bundle bundle = new Bundle();
+                    bundle.putString("id", symbol.getData().getAsJsonObject().get("id").toString());
+                    Log.d("IDtoPass", symbol.getData().getAsJsonObject().get("id").toString());
+                    MapObjectFragment mapObjectFragment = new MapObjectFragment();
+                    mapObjectFragment.setArguments(bundle);
+                    addFragment(mapObjectFragment);
+                }
+            });
     }
 
     private void callApi() {
@@ -536,32 +553,137 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             public void onResponse(JSONObject response) {
                                 Log.d("VolleyJson", "Server is refreshing map objects");
                                 // Handle JSON data
+                                Gson gson = new Gson();
+                                JSONArray mapObjects = null;
                                 try {
-                                    Gson gson = new Gson();
-                                    JSONArray mapObjects = response.getJSONArray("mapobjects");
-
-                                    // JSON data converted into array
-
-                                    ShownObject[] shownObjects = gson.fromJson(mapObjects.toString(), ShownObject[].class);
-                                    Log.d("VolleyJson", "[UPDATE] This is the first object from the server" + shownObjects[0].toString());
-                                    Model.getInstance().refreshShownObjects(shownObjects);
-
-                                    // Deleting all the symbols
-
-                                    List<Symbol> symbols = new ArrayList<>();
-                                    LongSparseArray<Symbol> symbolArray = symbolManager.getAnnotations();
-                                    for (int i = 0; i < symbolArray.size(); i++) {
-                                        symbols.add(symbolArray.valueAt(i));
-                                    }
-                                    symbolManager.delete(symbols);
-
-                                    // Re-adding symbols
-
-                                    addObjectsToMap(mapStyle);
-
+                                    mapObjects = response.getJSONArray("mapobjects");
                                 }
                                 catch (JSONException e){
                                     e.printStackTrace();
+                                }
+
+                                // ShownObjects array (objects update)
+
+                                ShownObject[] shownObjects = gson.fromJson(mapObjects.toString(), ShownObject[].class);
+                                Log.d("VolleyJson", "[UPDATE] This is the first object from the server" + shownObjects[0].toString());
+
+                                ArrayList<ShownObject> shownObjectsModel = Model.getInstance().getShownObjects();
+
+                                // Symbols array with data (id)
+
+                                LongSparseArray<Symbol> symbolArray = symbolManager.getAnnotations();
+                                ArrayList<Symbol> symbols = new ArrayList<>();
+                                for (int i = 0; i < symbolArray.size(); i++) {
+                                    symbols.add(symbolArray.valueAt(i));
+                                }
+
+                                // The model is getting modified but the markers are replaced
+
+                                boolean flag = false;
+                                if (shownObjectsModel != null) {
+                                    for (int i = 0; i < shownObjects.length; i++) {
+                                        for (int j = 0; j < shownObjectsModel.size(); j++) {
+                                            // Changing position of the object in the model and the symbol
+
+                                            if (shownObjects[i].getId() == shownObjectsModel.get(j).getId()) {
+                                                flag = true;
+                                                shownObjectsModel.get(j).setLat(shownObjects[i].getLat());
+                                                shownObjectsModel.get(j).setLon(shownObjects[i].getLon());
+
+                                                for (int k = 0; k < symbols.size(); k++) {
+                                                    Symbol s = symbols.get(k);
+                                                    int objectId = Integer.parseInt(s.getData().getAsJsonObject().get("id").toString());
+
+                                                    if (objectId == shownObjects[i].getId()) {
+                                                        Log.d("SymbolId", objectId + " is the id we are re-positioning");
+                                                        s.setLatLng(new LatLng(shownObjects[i].getLat(), shownObjects[i].getLon()));
+
+                                                    }
+                                                }
+                                            }
+                                        }
+
+                                        if (!flag) {
+                                            // The object is new and never added before
+                                            // Adding id data as json element to each symbol
+                                            JsonObject element = gson.fromJson("{'id': " + shownObjects[i].getId() + "}", JsonObject.class);
+                                            if ("CA".equals(shownObjects[i].getType())) {
+                                                switch (shownObjects[i].getSize()) {
+                                                    case "L":
+                                                        symbolManager.create(new SymbolOptions()
+                                                                .withLatLng(new LatLng(shownObjects[i].getLat(), shownObjects[i].getLon()))
+                                                                .withIconImage("candy")
+                                                                .withData(element)
+                                                        );
+                                                        break;
+                                                    case "M":
+                                                        symbolManager.create(new SymbolOptions()
+                                                                .withLatLng(new LatLng(shownObjects[i].getLat(), shownObjects[i].getLon()))
+                                                                .withIconImage("candy3")
+                                                                .withData(element)
+                                                        );
+                                                        break;
+                                                    case "S":
+                                                        symbolManager.create(new SymbolOptions()
+                                                                .withLatLng(new LatLng(shownObjects[i].getLat(), shownObjects[i].getLon()))
+                                                                .withIconImage("candy2")
+                                                                .withData(element)
+                                                        );
+                                                        break;
+                                                }
+                                            } else {
+                                                switch (shownObjects[i].getSize()) {
+                                                    case "L":
+                                                        symbolManager.create(new SymbolOptions()
+                                                                .withLatLng(new LatLng(shownObjects[i].getLat(), shownObjects[i].getLon()))
+                                                                .withIconImage("dragon")
+                                                                .withData(element)
+                                                        );
+                                                        break;
+                                                    case "M":
+                                                        symbolManager.create(new SymbolOptions()
+                                                                .withLatLng(new LatLng(shownObjects[i].getLat(), shownObjects[i].getLon()))
+                                                                .withIconImage("dragonfly")
+                                                                .withData(element)
+                                                        );
+                                                        break;
+                                                    case "S":
+                                                        symbolManager.create(new SymbolOptions()
+                                                                .withLatLng(new LatLng(shownObjects[i].getLat(), shownObjects[i].getLon()))
+                                                                .withIconImage("octopus")
+                                                                .withData(element)
+                                                        );
+                                                        break;
+                                                }
+                                            }
+
+                                            symbolManager.addClickListener(new OnSymbolClickListener() {
+                                                @Override
+                                                public void onAnnotationClick(Symbol symbol) {
+                                                    Log.d("Symbol", "Symbol clicked");
+                                                    Bundle bundle = new Bundle();
+                                                    bundle.putString("id", symbol.getData().getAsJsonObject().get("id").toString());
+                                                    Log.d("IDtoPass", symbol.getData().getAsJsonObject().get("id").toString());
+                                                    MapObjectFragment mapObjectFragment = new MapObjectFragment();
+                                                    mapObjectFragment.setArguments(bundle);
+                                                    addFragment(mapObjectFragment);
+                                                }
+                                            });
+
+                                            // Add new object to the model
+                                        }
+                                        flag = false;
+                                        Log.d("NewObject", "New object added");
+                                        Model.getInstance().getShownObjects().add(shownObjects[i]);
+                                    }
+                                    symbolManager.update(symbols);
+                                } else {
+                                    // If the model was null, is because there was no Internet connection
+                                    ArrayList<ShownObject> shownObjectsArrayList = new ArrayList<>();
+                                    for (int i = 0; i<shownObjects.length; i++) {
+                                        shownObjectsArrayList.add(shownObjects[i]);
+                                    }
+                                    Model.getInstance().refreshShownObjects(shownObjectsArrayList);
                                 }
                             }
                         },

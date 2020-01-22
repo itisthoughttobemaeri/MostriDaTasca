@@ -11,8 +11,6 @@
         android:id="@+id/linearLayout"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginStart="70dp"
-        android:layout_marginEnd="70dp"
         android:background="@drawable/ic_background"
         android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -25,7 +23,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="165dp"
-            android:layout_marginTop="100dp"
+            android:layout_marginTop="90dp"
             android:fontFamily="@font/akajufont"
             android:gravity="center"
             android:text="mostri da tasca"
@@ -38,7 +36,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="175dp"
-            android:layout_marginTop="30dp"
+            android:layout_marginTop="10dp"
             android:fontFamily="@font/akajufont"
             android:gravity="center"
             android:text="the game"
@@ -48,8 +46,9 @@
 
         <TextView
             android:id="@+id/textView"
-            android:layout_width="wrap_content"
+            android:layout_width="527dp"
             android:layout_height="wrap_content"
+            android:layout_gravity="center"
             android:layout_marginHorizontal="160dp"
             android:fontFamily="@font/akajufont"
             android:justificationMode="inter_word"
@@ -63,7 +62,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="175dp"
-            android:layout_marginTop="35dp"
+            android:layout_marginTop="15dp"
             android:fontFamily="@font/akajufont"
             android:gravity="center"
             android:text="credits"
@@ -142,11 +141,11 @@
 
         <ImageView
             android:id="@+id/imageView4"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="135dp"
+            android:layout_height="72dp"
             android:layout_gravity="center"
             android:layout_marginHorizontal="75dp"
-            android:layout_marginTop="40dp"
+            android:layout_marginTop="10dp"
             app:srcCompat="@drawable/credits" />
 
     </LinearLayout>

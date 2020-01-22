@@ -30,12 +30,9 @@ public class ResultFragment extends Fragment {
     private ImageView imageView2;
     private ImageView imageView3;
 
-    public ResultFragment(int id){
-        this.id = id;
-    }
-
     @Override
     public View onCreateView(LayoutInflater layoutInflater, ViewGroup container, Bundle bundle) {
+        id = getArguments().getInt("id");
         return layoutInflater.inflate(R.layout.fragment_mapobject_result, container, false);
     }
 

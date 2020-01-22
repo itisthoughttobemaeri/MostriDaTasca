@@ -159,8 +159,9 @@ public class UserFragment extends Fragment {
                             @Override
                             public void onErrorResponse(VolleyError error) {
                                 error.printStackTrace();
-                                Log.d("ImageConversion", "The image was refused by the server");
-
+                                Log.d("ImageConversion", "The image was refused by the server or internet connection is not enabled");
+                                Intent intent = new Intent(getActivity().getApplicationContext(), MainActivity.class);
+                                startActivity(intent);
                             }
                         }
                 );
@@ -180,7 +181,7 @@ public class UserFragment extends Fragment {
                     ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 10);
                 } else {
                     Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI);
-                    startActivityForResult(intent, 0);
+                    startActivityForResult(intent, 10);
                 }
             }
         });
@@ -188,19 +189,8 @@ public class UserFragment extends Fragment {
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permission, int[] grantResults) {
-        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI);
-            startActivityForResult(intent, 0);
-        } else {
-            Log.d("Gallery", "Permission is not granted");
-        }
-        return;
-    }
-
-    @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        if (resultCode == RESULT_OK && requestCode == 0) {
+        if (resultCode == RESULT_OK && requestCode == 10) {
             Uri imageUri = data.getData();
 
             Bitmap bitmap = null;

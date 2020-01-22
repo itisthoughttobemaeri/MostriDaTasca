@@ -34,6 +34,7 @@ import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 
 public class SplashScreen extends AppCompatActivity {
     private SharedPreferences.Editor editor;
@@ -199,8 +200,12 @@ public class SplashScreen extends AppCompatActivity {
                             JSONArray mapObjects = response.getJSONArray("mapobjects");
                             // JSON data converted into array
                             ShownObject[] shownObjects = gson.fromJson(mapObjects.toString(), ShownObject[].class);
+                            ArrayList<ShownObject> shownObjectsArrayList = new ArrayList<>();
+                            for (int i = 0; i<shownObjects.length; i++) {
+                                shownObjectsArrayList.add(shownObjects[i]);
+                            }
                             Log.d("VolleyJson", "This is the first object from the server" + shownObjects[0].toString());
-                            Model.getInstance().refreshShownObjects(shownObjects);
+                            Model.getInstance().refreshShownObjects(shownObjectsArrayList);
                             myThread.start();
                         }
                         catch (JSONException e){

@@ -11,8 +11,6 @@
         android:id="@+id/linearLayout5"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginStart="70dp"
-        android:layout_marginEnd="70dp"
         android:background="@drawable/ic_background"
         android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -30,23 +28,22 @@
 
             <ImageView
                 android:id="@+id/resultImage"
-                android:layout_width="300dp"
-                android:layout_height="300dp"
+                android:layout_width="280dp"
+                android:layout_height="280dp"
                 android:layout_gravity="center"
                 android:layout_marginRight="90dp"
                 android:padding="7dp"
                 tools:srcCompat="@tools:sample/avatars" />
 
             <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
                 android:orientation="vertical">
 
                 <TextView
                     android:id="@+id/result"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginHorizontal="20dp"
                     android:layout_marginTop="30dp"
                     android:fontFamily="@font/akajufont"
                     android:gravity="center"
@@ -58,7 +55,6 @@
                     android:id="@+id/pointsGained"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginHorizontal="20dp"
                     android:layout_marginTop="30dp"
                     android:fontFamily="@font/akajufont"
                     android:gravity="center"
@@ -74,7 +70,6 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_marginHorizontal="80dp"
-            android:layout_marginTop="50dp"
             android:layout_marginBottom="30dp"
             android:gravity="center"
             android:orientation="horizontal">
@@ -129,10 +124,10 @@
 
         <Button
             android:id="@+id/ok"
-            android:layout_width="150dp"
-            android:layout_height="150dp"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
             android:layout_gravity="center"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="5dp"
             android:background="@android:color/transparent"
             android:backgroundTint="#FFFFFF"
             android:backgroundTintMode="multiply"
